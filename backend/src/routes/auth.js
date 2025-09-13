@@ -64,51 +64,70 @@ router.post('/register', [
   }
 });
 
-// Login
+// Login with debug logging
 router.post('/login', [
   body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
   body('password').notEmpty().withMessage('Password required'),
   handleValidationErrors
 ], async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const normalizedEmail = req.body.email.toLowerCase().trim();
+    const { password } = req.body;
 
-    // Get user with password
+    console.log('🔍 Login attempt for email:', normalizedEmail);
+
+    // Fetch user
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('id, email, full_name, avatar_url, password_hash, is_active')
-      .eq('email', email)
-      .single();
+      .eq('email', normalizedEmail)
+      .maybeSingle();
 
-    if (error || !user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    console.log('📥 Supabase user fetch result:', { user, error });
+
+    if (!user) {
+      console.log('❌ No user found for email');
+      return res.status(401).json({ error: 'Invalid credentials (user not found)' });
+    }
+
+    if (error) {
+      console.error('❌ Supabase error during login:', error);
+      return res.status(500).json({ error: 'Database error during login' });
     }
 
     if (!user.is_active) {
+      console.log('❌ User account inactive');
       return res.status(401).json({ error: 'Account is deactivated' });
     }
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    console.log('🔑 Password check:', isValidPassword);
+
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid credentials (wrong password)' });
     }
 
     // Update last login
-    await supabaseAdmin
+    const { error: updateError } = await supabaseAdmin
       .from('users')
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', user.id);
 
-    // Generate JWT
+    if (updateError) {
+      console.error('⚠️ Failed to update last_login_at:', updateError);
+    }
+
+    // Create JWT
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
-    // Remove password from response
     const { password_hash, ...userWithoutPassword } = user;
+
+    console.log('✅ Login successful for user:', userWithoutPassword);
 
     res.json({
       message: 'Login successful',
@@ -116,10 +135,12 @@ router.post('/login', [
       user: userWithoutPassword
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    console.error('🔥 Login error (catch block):', error);
+    res.status(500).json({ error: 'Login failed', details: error.message });
   }
 });
+
+
 
 // Get current user
 router.get('/me', authenticateToken, (req, res) => {
