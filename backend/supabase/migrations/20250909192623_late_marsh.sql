@@ -39,28 +39,6 @@ CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);
 CREATE INDEX IF NOT EXISTS users_username_idx ON users(username);
 CREATE INDEX IF NOT EXISTS users_is_active_idx ON users(is_active);
 
--- Enable RLS
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-
--- RLS Policies
-CREATE POLICY "Users can read own profile"
-  ON users
-  FOR SELECT
-  TO authenticated
-  USING (id = current_user_id());
-
-CREATE POLICY "Users can read public profiles"
-  ON users
-  FOR SELECT
-  TO authenticated
-  USING (true);
-
-CREATE POLICY "Service role can manage users"
-  ON users
-  FOR ALL
-  TO service_role
-  USING (true);
-
 -- Function to get current user ID (to be used in RLS policies)
 CREATE OR REPLACE FUNCTION current_user_id()
 RETURNS uuid
@@ -83,6 +61,29 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- Enable RLS
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Users can read own profile"
+  ON users
+  FOR SELECT
+  TO authenticated
+  USING (id = current_user_id());
+
+CREATE POLICY "Users can read public profiles"
+  ON users
+  FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Service role can manage users"
+  ON users
+  FOR ALL
+  TO service_role
+  USING (true);
+
 
 -- Trigger for updated_at
 CREATE TRIGGER update_users_updated_at
