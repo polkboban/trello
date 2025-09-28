@@ -10,10 +10,8 @@ const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ error: 'Access token required' });
     }
 
-    // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Get user from Supabase
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
@@ -52,7 +50,6 @@ const checkWorkspaceAccess = (requiredRole = 'member') => {
         return res.status(403).json({ error: 'Access denied to workspace' });
       }
 
-      // Role hierarchy: guest < member < admin < owner
       const roleHierarchy = { guest: 0, member: 1, admin: 2, owner: 3 };
       const userRoleLevel = roleHierarchy[membership.role];
       const requiredRoleLevel = roleHierarchy[requiredRole];

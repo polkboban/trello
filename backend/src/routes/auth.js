@@ -17,7 +17,6 @@ router.post('/register', [
   try {
     const { email, password, full_name } = req.body;
 
-    // Check if user exists
     const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('email')
@@ -28,11 +27,9 @@ router.post('/register', [
       return res.status(409).json({ error: 'User already exists' });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .insert({
@@ -46,7 +43,6 @@ router.post('/register', [
 
     if (error) throw error;
 
-    // Generate JWT
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
@@ -64,7 +60,6 @@ router.post('/register', [
   }
 });
 
-// Login with debug logging
 router.post('/login', [
   body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
   body('password').notEmpty().withMessage('Password required'),
@@ -74,33 +69,31 @@ router.post('/login', [
     const normalizedEmail = req.body.email.toLowerCase().trim();
     const { password } = req.body;
 
-    console.log('🔍 Login attempt for email:', normalizedEmail);
+    console.log(' Login attempt for email:', normalizedEmail);
 
-    // Fetch user
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('id, email, full_name, avatar_url, password_hash, is_active')
       .eq('email', normalizedEmail)
       .maybeSingle();
 
-    console.log('📥 Supabase user fetch result:', { user, error });
+    console.log(' Supabase user fetch result:', { user, error });
 
     if (!user) {
-      console.log('❌ No user found for email');
+      console.log(' No user found for email');
       return res.status(401).json({ error: 'Invalid credentials (user not found)' });
     }
 
     if (error) {
-      console.error('❌ Supabase error during login:', error);
+      console.error(' Supabase error during login:', error);
       return res.status(500).json({ error: 'Database error during login' });
     }
 
     if (!user.is_active) {
-      console.log('❌ User account inactive');
+      console.log(' User account inactive');
       return res.status(401).json({ error: 'Account is deactivated' });
     }
 
-    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     console.log('🔑 Password check:', isValidPassword);
 
@@ -108,7 +101,6 @@ router.post('/login', [
       return res.status(401).json({ error: 'Invalid credentials (wrong password)' });
     }
 
-    // Update last login
     const { error: updateError } = await supabaseAdmin
       .from('users')
       .update({ last_login_at: new Date().toISOString() })
@@ -118,7 +110,6 @@ router.post('/login', [
       console.error('⚠️ Failed to update last_login_at:', updateError);
     }
 
-    // Create JWT
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
@@ -127,7 +118,7 @@ router.post('/login', [
 
     const { password_hash, ...userWithoutPassword } = user;
 
-    console.log('✅ Login successful for user:', userWithoutPassword);
+    console.log('Login successful for user:', userWithoutPassword);
 
     res.json({
       message: 'Login successful',
@@ -135,19 +126,17 @@ router.post('/login', [
       user: userWithoutPassword
     });
   } catch (error) {
-    console.error('🔥 Login error (catch block):', error);
+    console.error(' Login error (catch block):', error);
     res.status(500).json({ error: 'Login failed', details: error.message });
   }
 });
 
 
 
-// Get current user
 router.get('/me', authenticateToken, (req, res) => {
   res.json({ user: req.user });
 });
 
-// Update profile
 router.put('/profile', authenticateToken, [
   body('full_name').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Full name must be 1-100 characters'),
   body('avatar_url').optional().isURL().withMessage('Valid avatar URL required'),
