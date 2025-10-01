@@ -5,7 +5,6 @@ const { validateUUID, validatePagination } = require('../middleware/validation')
 
 const router = express.Router();
 
-// Get user notifications
 router.get('/',
   authenticateToken,
   validatePagination,
@@ -60,7 +59,6 @@ router.get('/',
   }
 );
 
-// Mark notification as read
 router.patch('/:notificationId/read',
   authenticateToken,
   validateUUID('notificationId'),
@@ -96,7 +94,6 @@ router.patch('/:notificationId/read',
   }
 );
 
-// Mark all notifications as read
 router.patch('/read-all',
   authenticateToken,
   async (req, res) => {
@@ -124,7 +121,6 @@ router.patch('/read-all',
   }
 );
 
-// Get notification counts
 router.get('/counts',
   authenticateToken,
   async (req, res) => {
