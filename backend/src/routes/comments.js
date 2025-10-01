@@ -7,7 +7,6 @@ const notificationService = require('../services/notificationService');
 
 const router = express.Router();
 
-// Get comments for task
 router.get('/task/:taskId',
   authenticateToken,
   validateUUID('taskId'),
@@ -18,7 +17,6 @@ router.get('/task/:taskId',
       const { page = 1, limit = 20 } = req.query;
       const offset = (page - 1) * limit;
 
-      // Check task access
       const { data: task, error: taskError } = await supabaseAdmin
         .from('tasks')
         .select(`
@@ -87,7 +85,6 @@ router.get('/task/:taskId',
   }
 );
 
-// Create comment
 router.post('/',
   authenticateToken,
   validateComment,
@@ -95,7 +92,6 @@ router.post('/',
     try {
       const { content, task_id } = req.body;
 
-      // Check task access
       const { data: task, error: taskError } = await supabaseAdmin
         .from('tasks')
         .select(`
@@ -124,7 +120,6 @@ router.post('/',
         return res.status(403).json({ error: 'Access denied to task' });
       }
 
-      // Create comment
       const { data: comment, error: commentError } = await supabaseAdmin
         .from('comments')
         .insert({
@@ -144,15 +139,13 @@ router.post('/',
 
       if (commentError) throw commentError;
 
-      // Extract mentions from content (@username)
       const mentionMatches = content.match(/@(\w+)/g);
       const mentionedUsers = [];
 
       if (mentionMatches) {
         for (const match of mentionMatches) {
-          const username = match.substring(1); // Remove @
+          const username = match.substring(1);
           
-          // Find user by username (assuming we have a username field)
           const { data: mentionedUser } = await supabaseAdmin
             .from('users')
             .select('id, full_name')
@@ -160,7 +153,6 @@ router.post('/',
             .single();
 
           if (mentionedUser) {
-            // Check if mentioned user has access to this workspace
             const { data: mentionedMembership } = await supabaseAdmin
               .from('workspace_members')
               .select('user_id')
@@ -171,7 +163,6 @@ router.post('/',
             if (mentionedMembership) {
               mentionedUsers.push(mentionedUser);
 
-              // Create mention record
               await supabaseAdmin
                 .from('comment_mentions')
                 .insert({
@@ -179,7 +170,6 @@ router.post('/',
                   mentioned_user_id: mentionedUser.id
                 });
 
-              // Send notification
               await notificationService.createNotification({
                 user_id: mentionedUser.id,
                 workspace_id: task.projects.workspace_id,
@@ -198,7 +188,6 @@ router.post('/',
         }
       }
 
-      // Log activity
       await activityService.logActivity({
         workspace_id: task.projects.workspace_id,
         project_id: task.project_id,
@@ -211,7 +200,6 @@ router.post('/',
         }
       });
 
-      // Emit socket event
       const io = req.app.get('socketio');
       io.to(`task_${task_id}`).emit('comment_created', {
         comment: {
