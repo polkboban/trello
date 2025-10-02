@@ -8,7 +8,6 @@ const notificationService = require('../services/notificationService');
 
 const router = express.Router();
 
-// Get tasks in project
 router.get('/project/:projectId',
   authenticateToken,
   validateUUID('projectId'),
@@ -19,7 +18,6 @@ router.get('/project/:projectId',
       const { page = 1, limit = 50, status, priority, assignee, search } = req.query;
       const offset = (page - 1) * limit;
 
-      // Check project access
       const { data: project, error: projectError } = await supabaseAdmin
         .from('projects')
         .select('workspace_id')
@@ -73,7 +71,6 @@ router.get('/project/:projectId',
         `)
         .eq('project_id', projectId);
 
-      // Apply filters
       if (status) query = query.eq('status', status);
       if (priority) query = query.eq('priority', priority);
       if (assignee) {
@@ -119,7 +116,6 @@ router.get('/project/:projectId',
   }
 );
 
-// Get task details
 router.get('/:taskId',
   authenticateToken,
   validateUUID('taskId'),
@@ -177,7 +173,6 @@ router.get('/:taskId',
         return res.status(404).json({ error: 'Task not found' });
       }
 
-      // Check workspace access
       const { data: membership } = await supabaseAdmin
         .from('workspace_members')
         .select('role')
@@ -212,7 +207,6 @@ router.get('/:taskId',
   }
 );
 
-// Create task
 router.post('/',
   authenticateToken,
   validateTask,
@@ -220,7 +214,6 @@ router.post('/',
     try {
       const { title, description, priority = 'medium', status = 'todo', due_date, project_id, assignee_ids = [] } = req.body;
 
-      // Check project access
       const { data: project, error: projectError } = await supabaseAdmin
         .from('projects')
         .select('workspace_id, name')
@@ -242,7 +235,6 @@ router.post('/',
         return res.status(403).json({ error: 'Insufficient permissions to create task' });
       }
 
-      // Create task
       const { data: task, error: taskError } = await supabaseAdmin
         .from('tasks')
         .insert({
@@ -259,7 +251,6 @@ router.post('/',
 
       if (taskError) throw taskError;
 
-      // Create task assignments
       if (assignee_ids.length > 0) {
         const assignments = assignee_ids.map(user_id => ({
           task_id: task.id,
@@ -273,7 +264,6 @@ router.post('/',
 
         if (assignmentError) throw assignmentError;
 
-        // Send notifications to assignees
         for (const assignee_id of assignee_ids) {
           await notificationService.createNotification({
             user_id: assignee_id,
@@ -287,7 +277,6 @@ router.post('/',
         }
       }
 
-      // Log activity
       await activityService.logActivity({
         workspace_id: project.workspace_id,
         project_id: project_id,
@@ -297,7 +286,6 @@ router.post('/',
         details: { task_title: task.title, assignee_count: assignee_ids.length }
       });
 
-      // Emit socket event
       const io = req.app.get('socketio');
       io.to(`project_${project_id}`).emit('task_created', {
         task,
@@ -316,7 +304,6 @@ router.post('/',
   }
 );
 
-// Update task status
 router.patch('/:taskId/status',
   authenticateToken,
   validateUUID('taskId'),
@@ -329,7 +316,6 @@ router.patch('/:taskId/status',
       const { taskId } = req.params;
       const { status } = req.body;
 
-      // Get task and check access
       const { data: task, error: taskError } = await supabaseAdmin
         .from('tasks')
         .select(`
@@ -357,7 +343,6 @@ router.patch('/:taskId/status',
         return res.status(403).json({ error: 'Access denied to task' });
       }
 
-      // Update task status
       const { data: updatedTask, error: updateError } = await supabaseAdmin
         .from('tasks')
         .update({
@@ -370,7 +355,6 @@ router.patch('/:taskId/status',
 
       if (updateError) throw updateError;
 
-      // Log activity
       await activityService.logActivity({
         workspace_id: task.projects.workspace_id,
         project_id: task.project_id,
@@ -384,7 +368,6 @@ router.patch('/:taskId/status',
         }
       });
 
-      // Emit socket event
       const io = req.app.get('socketio');
       io.to(`project_${task.project_id}`).emit('task_updated', {
         task: updatedTask,
