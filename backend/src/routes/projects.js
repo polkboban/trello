@@ -6,7 +6,6 @@ const activityService = require('../services/activityService');
 
 const router = express.Router();
 
-// Get projects in workspace
 router.get('/workspace/:workspaceId',
   authenticateToken,
   validateUUID('workspaceId'),
@@ -63,7 +62,6 @@ router.get('/workspace/:workspaceId',
   }
 );
 
-// Get project details
 router.get('/:projectId',
   authenticateToken,
   validateUUID('projectId'),
@@ -90,7 +88,6 @@ router.get('/:projectId',
 
       if (error) throw error;
 
-      // Check workspace access
       const { data: membership } = await supabaseAdmin
         .from('workspace_members')
         .select('role')
@@ -120,7 +117,6 @@ router.get('/:projectId',
   }
 );
 
-// Create project
 router.post('/',
   authenticateToken,
   validateProject,
@@ -128,7 +124,6 @@ router.post('/',
     try {
       const { name, description, workspace_id } = req.body;
 
-      // Check workspace access
       const { data: membership } = await supabaseAdmin
         .from('workspace_members')
         .select('role')
@@ -160,7 +155,6 @@ router.post('/',
 
       if (error) throw error;
 
-      // Log activity
       await activityService.logActivity({
         workspace_id,
         project_id: project.id,
@@ -176,12 +170,12 @@ router.post('/',
       delete formattedProject.users;
 
       res.status(201).json({
-        message: 'Project created successfully',
+        message: 'project created successfully',
         project: formattedProject
       });
     } catch (error) {
-      console.error('Create project error:', error);
-      res.status(500).json({ error: 'Failed to create project' });
+      console.error('create project error:', error);
+      res.status(500).json({ error: 'failed to create project' });
     }
   }
 );
