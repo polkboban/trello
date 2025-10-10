@@ -9,7 +9,6 @@ const { validateUUID } = require('../middleware/validation');
 
 const router = express.Router();
 
-// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = process.env.UPLOAD_PATH || 'uploads/';
@@ -25,7 +24,6 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Allow common file types
   const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|csv|xlsx|zip/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
@@ -45,7 +43,6 @@ const upload = multer({
   }
 });
 
-// Upload file to task
 router.post('/task/:taskId',
   authenticateToken,
   validateUUID('taskId'),
@@ -58,7 +55,6 @@ router.post('/task/:taskId',
         return res.status(400).json({ error: 'No file provided' });
       }
 
-      // Check task access
       const { data: task, error: taskError } = await supabaseAdmin
         .from('tasks')
         .select(`
@@ -86,7 +82,6 @@ router.post('/task/:taskId',
         return res.status(403).json({ error: 'Access denied to task' });
       }
 
-      // Save attachment record
       const fileUrl = `/uploads/${req.file.filename}`;
       const { data: attachment, error: attachmentError } = await supabaseAdmin
         .from('attachments')
@@ -133,7 +128,6 @@ router.post('/task/:taskId',
     } catch (error) {
       console.error('Upload file error:', error);
       
-      // Clean up file if database save failed
       if (req.file && fs.existsSync(req.file.path)) {
         fs.unlinkSync(req.file.path);
       }
@@ -147,7 +141,6 @@ router.post('/task/:taskId',
   }
 );
 
-// Delete attachment
 router.delete('/:attachmentId',
   authenticateToken,
   validateUUID('attachmentId'),
@@ -155,7 +148,6 @@ router.delete('/:attachmentId',
     try {
       const { attachmentId } = req.params;
 
-      // Get attachment and check access
       const { data: attachment, error: attachmentError } = await supabaseAdmin
         .from('attachments')
         .select(`
@@ -184,19 +176,16 @@ router.delete('/:attachmentId',
         return res.status(403).json({ error: 'Access denied to attachment' });
       }
 
-      // Only allow deletion by uploader or admins/owners
       if (attachment.uploaded_by !== req.user.id && !['admin', 'owner'].includes(membership.role)) {
         return res.status(403).json({ error: 'Insufficient permissions to delete attachment' });
       }
 
-      // Delete file from filesystem
       const uploadPath = process.env.UPLOAD_PATH || 'uploads/';
       const filePath = path.join(uploadPath, path.basename(attachment.file_url));
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
 
-      // Delete attachment record
       const { error: deleteError } = await supabaseAdmin
         .from('attachments')
         .delete()
@@ -204,7 +193,6 @@ router.delete('/:attachmentId',
 
       if (deleteError) throw deleteError;
 
-      // Emit socket event
       const io = req.app.get('socketio');
       io.to(`task_${attachment.task_id}`).emit('attachment_deleted', {
         attachment_id: attachmentId,
