@@ -50,7 +50,6 @@ class ActivityService {
         return null;
       }
 
-      // Emit activity to workspace members via socket
       const io = global.io;
       if (io) {
         io.to(`workspace_${workspace_id}`).emit('new_activity', {
