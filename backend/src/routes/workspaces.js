@@ -6,7 +6,6 @@ const activityService = require('../services/activityService');
 
 const router = express.Router();
 
-// Get user workspaces
 router.get('/', authenticateToken, validatePagination, async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
@@ -51,7 +50,6 @@ router.get('/', authenticateToken, validatePagination, async (req, res) => {
   }
 });
 
-// Get workspace details
 router.get('/:workspaceId', 
   authenticateToken, 
   validateUUID('workspaceId'), 
@@ -114,12 +112,10 @@ router.get('/:workspaceId',
   }
 );
 
-// Create workspace
 router.post('/', authenticateToken, validateWorkspace, async (req, res) => {
   try {
     const { name, description } = req.body;
 
-    // Create workspace
     const { data: workspace, error: workspaceError } = await supabaseAdmin
       .from('workspaces')
       .insert({
@@ -133,7 +129,6 @@ router.post('/', authenticateToken, validateWorkspace, async (req, res) => {
 
     if (workspaceError) throw workspaceError;
 
-    // Add creator as owner
     const { error: memberError } = await supabaseAdmin
       .from('workspace_members')
       .insert({
@@ -144,7 +139,6 @@ router.post('/', authenticateToken, validateWorkspace, async (req, res) => {
 
     if (memberError) throw memberError;
 
-    // Log activity
     await activityService.logActivity({
       workspace_id: workspace.id,
       user_id: req.user.id,
@@ -162,7 +156,6 @@ router.post('/', authenticateToken, validateWorkspace, async (req, res) => {
   }
 });
 
-// Update workspace
 router.put('/:workspaceId',
   authenticateToken,
   validateUUID('workspaceId'),
@@ -186,7 +179,6 @@ router.put('/:workspaceId',
 
       if (error) throw error;
 
-      // Log activity
       await activityService.logActivity({
         workspace_id: workspaceId,
         user_id: req.user.id,
