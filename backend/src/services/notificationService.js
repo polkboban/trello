@@ -43,7 +43,6 @@ class NotificationService {
         return null;
       }
 
-      // Send real-time notification via socket
       const io = global.io;
       if (io) {
         io.to(`user_${user_id}`).emit('new_notification', {
@@ -74,7 +73,6 @@ class NotificationService {
 
       if (error) throw error;
 
-      // Send real-time notifications
       const io = global.io;
       if (io) {
         createdNotifications.forEach(notification => {
@@ -127,7 +125,6 @@ class NotificationService {
     }
   }
 
-  // Notification types and templates
   getNotificationTemplate(type, data) {
     const templates = {
       task_assigned: {
