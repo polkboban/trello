@@ -95,7 +95,7 @@ router.post('/login', [
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    console.log('🔑 Password check:', isValidPassword);
+    console.log('Password check:', isValidPassword);
 
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid credentials (wrong password)' });
@@ -107,7 +107,7 @@ router.post('/login', [
       .eq('id', user.id);
 
     if (updateError) {
-      console.error('⚠️ Failed to update last_login_at:', updateError);
+      console.error('Failed to update last_login_at:', updateError);
     }
 
     const token = jwt.sign(
