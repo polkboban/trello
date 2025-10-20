@@ -11,28 +11,35 @@ router.get('/', authenticateToken, validatePagination, async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    const { data: workspaces, error } = await supabaseAdmin
-      .from('workspace_members')
-      .select(`
-        role,
-        joined_at,
-        workspaces (
-          id,
-          name,
-          description,
-          avatar_url,
-          created_at,
-          updated_at,
+    const { data: workspace, error } = await supabaseAdmin
+        .from('workspaces')
+        .select(`
+          *,
           users!workspaces_created_by_fkey (
             id,
             full_name,
             avatar_url
+          ),
+          workspace_members (
+            user_id,
+            role,
+            joined_at,
+            users:users!workspace_members_user_id_fkey (  /* <-- THIS IS THE FIX */
+              id,
+              full_name,
+              email,
+              avatar_url
+            )
+          ),
+          projects (
+            id,
+            name,
+            description,
+            created_at
           )
-        )
-      `)
-      .eq('user_id', req.user.id)
-      .order('joined_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+        `)
+        .eq('id', workspaceId)
+        .single();
 
     if (error) throw error;
 
@@ -71,7 +78,7 @@ router.get('/:workspaceId',
             user_id,
             role,
             joined_at,
-            users (
+            users:users!workspace_members_user_id_fkey (
               id,
               full_name,
               email,
@@ -93,11 +100,12 @@ router.get('/:workspaceId',
       const formattedWorkspace = {
         ...workspace,
         created_by: workspace.users,
-        members: workspace.workspace_members.map(member => ({
+        members: (workspace.workspace_members || []).map(member => ({
           ...member.users,
           role: member.role,
           joined_at: member.joined_at
         })),
+        projects: workspace.projects || [],
         user_role: req.workspaceRole
       };
 

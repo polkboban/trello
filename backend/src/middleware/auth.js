@@ -39,7 +39,7 @@ const checkWorkspaceAccess = (requiredRole = 'member') => {
         return res.status(400).json({ error: 'Workspace ID required' });
       }
 
-      const { data: membership, error } = await supabase
+      const { data: membership, error } = await supabaseAdmin
         .from('workspace_members')
         .select('role')
         .eq('workspace_id', workspaceId)
