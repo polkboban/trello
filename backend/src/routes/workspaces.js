@@ -11,43 +11,36 @@ router.get('/', authenticateToken, validatePagination, async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    const { data: workspace, error } = await supabaseAdmin
-        .from('workspaces')
-        .select(`
-          *,
+    const { data: workspaces, error } = await supabaseAdmin
+      .from('workspace_members')
+      .select(`
+        role,
+        joined_at,
+        workspaces (
+          id,
+          name,
+          description,
+          avatar_url,
+          created_at,
+          updated_at,
           users!workspaces_created_by_fkey (
             id,
             full_name,
             avatar_url
-          ),
-          workspace_members (
-            user_id,
-            role,
-            joined_at,
-            users:users!workspace_members_user_id_fkey (  /* <-- THIS IS THE FIX */
-              id,
-              full_name,
-              email,
-              avatar_url
-            )
-          ),
-          projects (
-            id,
-            name,
-            description,
-            created_at
           )
-        `)
-        .eq('id', workspaceId)
-        .single();
+        )
+      `)
+      .eq('user_id', req.user.id)
+      .order('joined_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
-    const formattedWorkspaces = workspaces.map(item => ({
+    const formattedWorkspaces = (workspaces || []).map(item => ({
       ...item.workspaces,
       user_role: item.role,
       joined_at: item.joined_at,
-      created_by: item.workspaces.users
+      created_by: item.workspaces?.users
     }));
 
     res.json({ workspaces: formattedWorkspaces });
@@ -56,6 +49,7 @@ router.get('/', authenticateToken, validatePagination, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch workspaces' });
   }
 });
+
 
 router.get('/:workspaceId', 
   authenticateToken, 
