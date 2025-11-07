@@ -21,7 +21,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="p-8 space-y-6 bg-gray-50 dark:bg-dark-bg min-h-screen transition-colors">
+      <div className="p-8 space-y-6 bg-[#f2f2f2] dark:bg-dark-bg min-h-screen transition-colors">
         <header className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">Your Workspaces</h1>
           <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
