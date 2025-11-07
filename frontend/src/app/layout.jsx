@@ -1,14 +1,17 @@
 import './globals.css';
+import ThemeProvider from '../components/ThemeProvider';
 
 export const metadata = {
   title: 'Trello Clone',
-  description: 'A Trello-style project management app',
+  description: 'Trello-style project management app',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50">{children}</body>
+      <body className="transition-colors duration-300">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

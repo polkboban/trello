@@ -17,7 +17,6 @@ export default function ProtectedRoute({ children }) {
     }
   }, [router]);
 
-  // Prevent flicker before redirect
   if (!authorized) {
     return (
       <div className="flex h-screen items-center justify-center text-gray-600">
