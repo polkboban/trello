@@ -2,9 +2,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-/**
- * Wrap this around any page you want to protect.
- */
 export default function ProtectedRoute({ children }) {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
