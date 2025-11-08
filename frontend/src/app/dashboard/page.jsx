@@ -1,5 +1,7 @@
 'use client';
+
 import { useEffect, useState } from 'react';
+import Header from '../../components/Header';
 import api from '../../lib/api';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import Link from 'next/link';
@@ -43,15 +45,18 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <div className="p-8 space-y-6 bg-[#f2f2f2] dark:bg-dark-bg min-h-screen transition-colors">
-        <header className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Your Workspaces</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-          >
-            + Create
-          </button>
-        </header>
+        <Header title="Your Workspaces" />
+
+        <div className="p-1 space-y-6">
+          <header className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-semibold">Your Workspaces</h1>
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+            >
+              + Create
+            </button>
+          </header>
 
         {/* Workspace Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -120,6 +125,7 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </ProtectedRoute>
   );

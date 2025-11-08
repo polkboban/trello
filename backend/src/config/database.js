@@ -19,4 +19,8 @@ const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+console.log('✅ SUPABASE_URL:', process.env.SUPABASE_URL);
+console.log('✅ Service role key loaded:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'yes' : 'NO!');
+
+
 module.exports = { supabase, supabaseAdmin };

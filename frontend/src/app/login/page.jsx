@@ -2,6 +2,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '../../lib/api';
+import Image from 'next/image';
+import { FcGoogle } from 'react-icons/fc';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,51 +28,91 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`, // Supabase redirect
+      },
+    });
+
+    if (error) console.error('Google Sign-In Error:', error);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-8 rounded-2xl shadow-lg w-96 space-y-4"
-      >
-        <h2 className="text-2xl font-semibold text-center mb-4">Sign In</h2>
-        {error && (
-          <p className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
-            {error}
-          </p>
-        )}
-        <div>
-          <label className="text-sm text-gray-600">Email</label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="border w-full p-2 rounded-lg mt-1"
-            required
-          />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white">
+      <div className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl">
+        <div className="flex justify-center mb-6">
+          <Image src="/trello.svg" alt="Trello" width={50} height={30} />
         </div>
-        <div>
-          <label className="text-sm text-gray-600">Password</label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="border w-full p-2 rounded-lg mt-1"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition"
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-        <p className="text-sm text-gray-500 text-center">
-          Don’t have an account? <a href="/register" className="text-blue-600">Sign up</a>
+
+        <h2 className="text-3xl font-bold text-center mb-2 text-white">Welcome back</h2>
+        <p className="text-center text-gray-300 mb-8 text-sm">
+          Sign in to your account to continue
         </p>
-      </form>
+
+        {error && (
+          <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-2 rounded-lg mb-4 text-sm text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-5">
+          <div>
+            <label className="text-sm text-gray-300">Email</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="mt-1 w-full px-4 py-2 rounded-lg bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-300">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="mt-1 w-full px-4 py-2 rounded-lg bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition text-white font-semibold shadow-lg disabled:opacity-50"
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+
+          <div className="flex items-center justify-center text-gray-400 my-3">
+            <span className="border-t border-gray-700 w-1/4"></span>
+            <span className="mx-2 text-sm">or</span>
+            <span className="border-t border-gray-700 w-1/4"></span>
+          </div>
+
+          {/* ✅ Google Sign-in Button */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 py-2 rounded-lg hover:bg-gray-100 transition font-medium"
+          >
+            <FcGoogle className="text-xl" /> Sign in with Google
+          </button>
+        </form>
+
+        <p className="text-center text-gray-400 text-sm mt-6">
+          Don’t have an account?{' '}
+          <a href="/register" className="text-blue-400 hover:underline">
+            Create one
+          </a>
+        </p>
+      </div>
     </div>
   );
 }
