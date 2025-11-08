@@ -49,12 +49,13 @@ router.get('/project/:projectId',
             avatar_url
           ),
           task_assignments (
-            users (
+            users:users!task_assignments_user_id_fkey (
               id,
               full_name,
               avatar_url
             )
-          ),
+          )
+
           subtasks (
             id,
             title,

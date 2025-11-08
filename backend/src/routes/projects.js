@@ -84,9 +84,14 @@ router.get('/:projectId',
           )
         `)
         .eq('id', projectId)
-        .single();
+        .maybeSingle(); // ✅ instead of .single()
 
       if (error) throw error;
+
+      // ✅ if still no data, respond with 404
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
 
       const { data: membership } = await supabaseAdmin
         .from('workspace_members')
@@ -116,6 +121,7 @@ router.get('/:projectId',
     }
   }
 );
+
 
 router.post('/',
   authenticateToken,

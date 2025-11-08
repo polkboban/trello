@@ -35,15 +35,6 @@ export default function DashboardLayout({ children }) {
           </button>
         </div>
 
-        {/* Workspace Dropdown */}
-        <div className="bg-gray-100 dark:bg-[#2C2D31] px-3 py-2 rounded-lg mb-4 flex items-center justify-between cursor-pointer">
-          <div className="flex items-center gap-2">
-            <div className="bg-red-500 rounded-md w-6 h-6" />
-            <span className="text-sm font-medium">Kettle Studio</span>
-          </div>
-          <ChevronDown size={16} className="opacity-60" />
-        </div>
-
         {/* Navigation Links */}
         <nav className="flex flex-col gap-3 text-sm font-medium mb-6 mt-2">
           <Link
