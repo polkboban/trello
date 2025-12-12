@@ -1,10 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import api from '../../lib/api'; // ✅ use relative path unless you have alias setup
+import { createClient } from '@/lib/supabase/client';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const supabase = createClient();
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -19,18 +20,24 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await api.post('/auth/register', form);
+      const { data, error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          data: {
+            full_name: form.full_name,
+            avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(form.full_name)}`
+          }
+        }
+      });
 
-      // Save token and user info in localStorage
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+      if (error) throw error;
 
       router.push('/dashboard');
+      router.refresh();
     } catch (err) {
       console.error('Registration error:', err);
-      setError(
-        err.response?.data?.error || 'Registration failed. Please try again.'
-      );
+      setError(err.message || 'Registration failed.');
     } finally {
       setLoading(false);
     }

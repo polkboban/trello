@@ -1,13 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import api from '../../lib/api';
 import Image from 'next/image';
 import { FcGoogle } from 'react-icons/fc';
-import { supabase } from '../../lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabase = createClient();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,27 +16,28 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    try {
-      const res = await api.post('/auth/login', form);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      router.push('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
-    } finally {
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: form.email,
+      password: form.password,
+    });
+
+    if (error) {
+      setError(error.message);
       setLoading(false);
+    } else {
+      router.push('/dashboard');
+      router.refresh();
     }
   };
 
   const handleGoogleSignIn = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`, // Supabase redirect
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-
-    if (error) console.error('Google Sign-In Error:', error);
   };
 
   return (
@@ -96,7 +97,6 @@ export default function LoginPage() {
             <span className="border-t border-gray-700 w-1/4"></span>
           </div>
 
-          {/* ✅ Google Sign-in Button */}
           <button
             type="button"
             onClick={handleGoogleSignIn}

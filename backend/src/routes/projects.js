@@ -123,6 +123,10 @@ router.get('/:projectId',
 );
 
 
+// backend/src/routes/projects.js
+
+// ... imports
+
 router.post('/',
   authenticateToken,
   validateProject,
@@ -130,17 +134,28 @@ router.post('/',
     try {
       const { name, description, workspace_id } = req.body;
 
-      const { data: membership } = await supabaseAdmin
+      console.log('Creating project:', { name, workspace_id, userId: req.user.id });
+
+      // 1. Check membership using maybeSingle() to avoid crashing if no row is found
+      const { data: membership, error: memberError } = await supabaseAdmin
         .from('workspace_members')
         .select('role')
         .eq('workspace_id', workspace_id)
         .eq('user_id', req.user.id)
-        .single();
+        .maybeSingle(); // <--- CHANGE: prevents error on 0 rows
 
+      if (memberError) {
+        console.error('Membership check error:', memberError);
+        return res.status(500).json({ error: 'Failed to verify membership' });
+      }
+
+      // 2. Handle non-member case gracefully
       if (!membership || !['member', 'admin', 'owner'].includes(membership.role)) {
+        console.warn('Unauthorized project creation attempt by:', req.user.id);
         return res.status(403).json({ error: 'Insufficient permissions to create project' });
       }
 
+      // 3. Insert Project
       const { data: project, error } = await supabaseAdmin
         .from('projects')
         .insert({
@@ -159,15 +174,23 @@ router.post('/',
         `)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Insert Error:', error); // <--- Log exact DB error
+        throw error;
+      }
 
-      await activityService.logActivity({
-        workspace_id,
-        project_id: project.id,
-        user_id: req.user.id,
-        action: 'project_created',
-        details: { project_name: project.name }
-      });
+      // 4. Log Activity
+      try {
+        await activityService.logActivity({
+          workspace_id,
+          project_id: project.id,
+          user_id: req.user.id,
+          action: 'project_created',
+          details: { project_name: project.name }
+        });
+      } catch (activityError) {
+        console.error('Activity log failed (non-fatal):', activityError);
+      }
 
       const formattedProject = {
         ...project,
@@ -176,14 +199,16 @@ router.post('/',
       delete formattedProject.users;
 
       res.status(201).json({
-        message: 'project created successfully',
+        message: 'Project created successfully',
         project: formattedProject
       });
     } catch (error) {
-      console.error('create project error:', error);
-      res.status(500).json({ error: 'failed to create project' });
+      console.error('Create project error:', error);
+      res.status(500).json({ error: 'Failed to create project', details: error.message });
     }
   }
 );
+
+// ... exports
 
 module.exports = router;
