@@ -1,37 +1,58 @@
-'use client';
-import { useEffect, useState } from 'react';
-import api from '../lib/api';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { getWorkspaces, createWorkspace } from '@/actions/workspace';
 
-export default function DashboardPage() {
-  const [workspaces, setWorkspaces] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    const fetchWorkspaces = async () => {
-      try {
-        const res = await api.get('/workspaces');
-        setWorkspaces(res.data.workspaces || []);
-      } catch (err) {
-        console.error('Failed to load workspaces:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchWorkspaces();
-  }, []);
+  // 1. Not Logged In -> Go to Login
+  if (!user) {
+    redirect('/login');
+  }
 
-  if (loading) return <p className="text-center mt-10">Loading workspaces...</p>;
+  // 2. Fetch User's Workspaces
+  const workspaces = await getWorkspaces();
 
+  // 3. If they have workspaces, go to the first one immediately
+  if (workspaces && workspaces.length > 0) {
+    redirect(`/workspace/${workspaces[0].id}`);
+  }
+
+  // 4. If NO workspaces, show the "Onboarding" view to create one
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-semibold mb-6">My Workspaces</h1>
-      <div className="grid grid-cols-3 gap-4">
-        {workspaces.map(w => (
-          <div key={w.id} className="p-4 bg-white shadow rounded-xl">
-            <h2 className="font-medium text-lg">{w.name}</h2>
-            <p className="text-sm text-gray-500">{w.description}</p>
+    <div className="min-h-screen flex items-center justify-center bg-[#f2f2f2] dark:bg-dark-bg p-4">
+      <div className="max-w-md w-full bg-white dark:bg-dark-card p-8 rounded-2xl shadow-xl">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold dark:text-white mb-2">Welcome to Kanban!</h1>
+          <p className="text-gray-500">Let's create your first workspace to get started.</p>
+        </div>
+
+        <form action={async (formData) => {
+          'use server';
+          await createWorkspace(formData);
+          // After creation, re-run this page logic which will now redirect to the new workspace
+          redirect('/'); 
+        }} className="space-y-4">
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Workspace Name</label>
+            <input 
+              name="name" 
+              type="text" 
+              placeholder="e.g. My Company, Personal Projects" 
+              className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-dark-bg dark:text-white dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition"
+              required 
+            />
           </div>
-        ))}
+          
+          <button 
+            type="submit" 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-blue-500/30"
+          >
+            Create Workspace
+          </button>
+        </form>
       </div>
     </div>
   );
