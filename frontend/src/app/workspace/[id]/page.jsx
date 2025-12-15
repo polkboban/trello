@@ -1,11 +1,10 @@
-import Link from 'next/link';
 import { getWorkspace } from '@/actions/workspace';
-import { getProjects, createProject } from '@/actions/project';
+import { getProjects } from '@/actions/project';
 import { redirect } from 'next/navigation';
-// 1. Remove the Header import
-// import Header from '@/components/Header'; 
+import BoardList from '@/components/BoardList';
 
 export default async function WorkspacePage({ params }) {
+  // Await params for Next.js 15+
   const { id } = await params;
 
   const [workspace, projects] = await Promise.all([
@@ -14,52 +13,47 @@ export default async function WorkspacePage({ params }) {
   ]);
 
   if (!workspace) {
-    // 2. Redirect to root '/' instead of '/dashboard' (which handles the logic now)
     redirect('/');
   }
 
   return (
-    <div className="flex flex-col h-full p-8">
-      {/* 3. Replaced Header component with a simple Title */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{workspace.name}</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">{workspace.description}</p>
-      </div>
+    // Dotted Matrix Background Container
+    <div className="min-h-full bg-[#f8f9fc] dark:bg-[#1E1F22] relative">
       
-      <main>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Boards</h2>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Create New Board Card */}
-          <form action={createProject} className="h-32">
-            <input type="hidden" name="workspaceId" value={id} />
-            <div className="relative group h-full">
-              <input 
-                name="name" 
-                placeholder="New Board Title" 
-                className="absolute inset-0 w-full h-full p-4 rounded-xl bg-gray-200 dark:bg-[#232428] text-gray-700 dark:text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-center font-medium"
-                required 
-              />
-              <button 
-                type="submit" 
-                className="absolute bottom-3 right-3 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                Create
-              </button>
-            </div>
-          </form>
+      {/* CSS Pattern Overlay */}
+      <div className="absolute inset-0 z-0 opacity-[0.4] dark:opacity-[0.15]" 
+           style={{
+             backgroundImage: 'radial-gradient(#a1a1aa 1px, transparent 1px)',
+             backgroundSize: '24px 24px'
+           }}
+      ></div>
 
-          {/* List Existing Boards */}
-          {projects.map((project) => (
-            <Link key={project.id} href={`/board/${project.id}`}>
-              <div className="h-32 bg-white dark:bg-dark-card p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer border-l-4 border-blue-500 flex flex-col justify-between">
-                <h3 className="font-bold text-lg dark:text-white truncate">{project.name}</h3>
-                <span className="text-xs text-gray-500 dark:text-gray-400">View Board &rarr;</span>
-              </div>
-            </Link>
-          ))}
+      <div className="relative z-10 p-8 max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-10 mt-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+              {workspace.name}
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">
+              {workspace.description || 'Manage your projects and tasks efficiently'}
+            </p>
+          </div>
+          
+          {/* Stats / Info Pill */}
+          <div className="flex items-center gap-2 bg-white/80 dark:bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200 dark:border-white/10 shadow-sm">
+             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+               {projects.length} Active Board{projects.length !== 1 && 's'}
+             </span>
+          </div>
         </div>
-      </main>
+        
+        {/* The New Draggable Grid */}
+        <main>
+           <BoardList initialProjects={projects} workspaceId={id} />
+        </main>
+      </div>
     </div>
   );
 }

@@ -6,20 +6,16 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // 1. Not Logged In -> Go to Login
   if (!user) {
     redirect('/login');
   }
 
-  // 2. Fetch User's Workspaces
   const workspaces = await getWorkspaces();
 
-  // 3. If they have workspaces, go to the first one immediately
   if (workspaces && workspaces.length > 0) {
     redirect(`/workspace/${workspaces[0].id}`);
   }
 
-  // 4. If NO workspaces, show the "Onboarding" view to create one
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f2f2f2] dark:bg-dark-bg p-4">
       <div className="max-w-md w-full bg-white dark:bg-dark-card p-8 rounded-2xl shadow-xl">
@@ -31,7 +27,6 @@ export default async function Home() {
         <form action={async (formData) => {
           'use server';
           await createWorkspace(formData);
-          // After creation, re-run this page logic which will now redirect to the new workspace
           redirect('/'); 
         }} className="space-y-4">
           

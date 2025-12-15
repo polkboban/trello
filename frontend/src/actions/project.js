@@ -9,7 +9,7 @@ export async function getProjects(workspaceId) {
     .from('projects')
     .select('*')
     .eq('workspace_id', workspaceId)
-    .order('created_at', { ascending: false });
+    .order('position', { ascending: true });
 
   if (error) {
     console.error('Error fetching projects:', error);
@@ -32,10 +32,25 @@ export async function createProject(formData) {
     .insert({
       name,
       workspace_id: workspaceId,
-      created_by: user.id
+      created_by: user.id,
+      position: new Date().getTime() 
     });
 
   if (error) throw error;
 
   revalidatePath(`/workspace/${workspaceId}`);
+}
+
+// New: Reorder Action
+export async function updateProjectOrder(items) {
+  const supabase = await createClient();
+  
+  // We receive a list of { id, position }
+  for (const item of items) {
+    await supabase.rpc('update_project_position', {
+      project_id: item.id,
+      new_position: item.position
+    });
+  }
+  
 }

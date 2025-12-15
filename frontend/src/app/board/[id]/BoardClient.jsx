@@ -13,14 +13,13 @@ export default function BoardClient({ initialTasks, projectId }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [activeTask, setActiveTask] = useState(null);
 
-  // Update local state if server data changes (e.g. new task added)
   useEffect(() => {
     setTasks(initialTasks);
   }, [initialTasks]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 }, // Prevents accidental drags on click
+      activationConstraint: { distance: 5 },
     })
   );
 
@@ -39,7 +38,6 @@ export default function BoardClient({ initialTasks, projectId }) {
 
     if (!activeTask) return;
 
-    // 1. Drop on empty column
     if (COLUMNS.includes(overId)) {
       if (activeTask.status !== overId) {
         setTasks(prev => prev.map(t => 
@@ -49,7 +47,6 @@ export default function BoardClient({ initialTasks, projectId }) {
       return;
     }
 
-    // 2. Reorder over another task
     if (overTask && activeTask !== overTask) {
       setTasks(prev => {
         const activeIndex = prev.findIndex(t => t.id === activeId);
@@ -77,8 +74,7 @@ export default function BoardClient({ initialTasks, projectId }) {
     if (COLUMNS.includes(overId)) newStatus = overId;
     else if (tasks.find(t => t.id === overId)) newStatus = tasks.find(t => t.id === overId).status;
 
-    // Calculate generic position (timestamp) for persistence
-    // For a real prod app, you'd calculate float average between neighbors
+   
     await updateTaskPosition(activeId, newStatus, new Date().getTime());
   };
 
