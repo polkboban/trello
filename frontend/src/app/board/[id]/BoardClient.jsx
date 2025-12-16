@@ -5,13 +5,19 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { updateTaskPosition } from '@/actions/board';
 import BoardColumn from '@/components/BoardColumn';
 import TaskCard from '@/components/TaskCard';
+import TaskModal from '@/components/TaskModal'; // Import the new modal
 
 const COLUMNS = ['todo', 'in_progress', 'review', 'done'];
 const TITLES = { todo: 'To Do', in_progress: 'In Progress', review: 'Review', done: 'Done' };
 
 export default function BoardClient({ initialTasks, projectId }) {
   const [tasks, setTasks] = useState(initialTasks);
-  const [activeTask, setActiveTask] = useState(null);
+  const [activeDragTask, setActiveDragTask] = useState(null); // Renamed for clarity
+  
+  // --- NEW: Modal State ---
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedColumn, setSelectedColumn] = useState(null); // For creating new tasks in a specific column
 
   useEffect(() => {
     setTasks(initialTasks);
@@ -23,39 +29,47 @@ export default function BoardClient({ initialTasks, projectId }) {
     })
   );
 
-  const handleDragStart = (e) => {
-    setActiveTask(tasks.find(t => t.id === e.active.id));
+  // --- Handlers ---
+
+  const openNewTaskModal = (columnId) => {
+    setSelectedColumn(columnId);
+    setSelectedTask(null);
+    setIsModalOpen(true);
   };
 
+  const openEditTaskModal = (task) => {
+    setSelectedTask(task);
+    setSelectedColumn(task.status);
+    setIsModalOpen(true);
+  };
+
+  const handleDragStart = (e) => {
+    setActiveDragTask(tasks.find(t => t.id === e.active.id));
+  };
+
+  // ... (Keep handleDragOver and handleDragEnd exactly as they were in your previous code) ...
   const handleDragOver = (e) => {
     const { active, over } = e;
     if (!over) return;
-
     const activeId = active.id;
     const overId = over.id;
     const activeTask = tasks.find(t => t.id === activeId);
     const overTask = tasks.find(t => t.id === overId);
-
     if (!activeTask) return;
 
     if (COLUMNS.includes(overId)) {
       if (activeTask.status !== overId) {
-        setTasks(prev => prev.map(t => 
-          t.id === activeId ? { ...t, status: overId } : t
-        ));
+        setTasks(prev => prev.map(t => t.id === activeId ? { ...t, status: overId } : t));
       }
       return;
     }
-
     if (overTask && activeTask !== overTask) {
       setTasks(prev => {
         const activeIndex = prev.findIndex(t => t.id === activeId);
         const overIndex = prev.findIndex(t => t.id === overId);
-        
         if (prev[activeIndex].status !== prev[overIndex].status) {
           prev[activeIndex].status = prev[overIndex].status;
         }
-        
         return arrayMove(prev, activeIndex, overIndex);
       });
     }
@@ -63,42 +77,52 @@ export default function BoardClient({ initialTasks, projectId }) {
 
   const handleDragEnd = async (e) => {
     const { active, over } = e;
-    setActiveTask(null);
+    setActiveDragTask(null);
     if (!over) return;
-
     const activeId = active.id;
     const overId = over.id;
     const currentTask = tasks.find(t => t.id === activeId);
-
     let newStatus = currentTask.status;
     if (COLUMNS.includes(overId)) newStatus = overId;
     else if (tasks.find(t => t.id === overId)) newStatus = tasks.find(t => t.id === overId).status;
-
-   
     await updateTaskPosition(activeId, newStatus, new Date().getTime());
   };
 
+
   return (
-    <DndContext 
-      sensors={sensors}
-      collisionDetection={closestCorners} 
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex h-full overflow-x-auto p-6 gap-6">
-        {COLUMNS.map(colId => (
-          <BoardColumn 
-            key={colId} 
-            id={colId} 
-            title={TITLES[colId]} 
-            tasks={tasks.filter(t => t.status === colId)} 
-          />
-        ))}
-      </div>
-      <DragOverlay>
-        {activeTask ? <TaskCard task={activeTask} /> : null}
-      </DragOverlay>
-    </DndContext>
+    <>
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCorners} 
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex h-full overflow-x-auto p-6 gap-6">
+          {COLUMNS.map(colId => (
+            <BoardColumn 
+              key={colId} 
+              id={colId} 
+              title={TITLES[colId]} 
+              tasks={tasks.filter(t => t.status === colId)} 
+              onAddTask={() => openNewTaskModal(colId)}  // Pass handler
+              onTaskClick={openEditTaskModal}            // Pass handler
+            />
+          ))}
+        </div>
+        <DragOverlay>
+          {activeDragTask ? <TaskCard task={activeDragTask} /> : null}
+        </DragOverlay>
+      </DndContext>
+
+      {/* The Modal */}
+      <TaskModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        task={selectedTask}
+        columnId={selectedColumn}
+        projectId={projectId}
+      />
+    </>
   );
 }

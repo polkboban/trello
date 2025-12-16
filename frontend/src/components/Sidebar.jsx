@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { getWorkspaces } from '@/actions/workspace';
 import { getProjects } from '@/actions/project';
+import { getBoard } from '@/actions/board';
 import UserMenu from './UserMenu';
 
 export default function Sidebar() {
@@ -32,14 +33,42 @@ export default function Sidebar() {
   }, []);
 
   useEffect(() => {
-    if (params.id && workspaces.length > 0) {
-      const current = workspaces.find(w => w.id === params.id);
-      setActiveWorkspace(current);
-      if (current) {
-        getProjects(current.id).then(setProjects);
+    const syncSidebarState = async () => {
+      if (!params.id || workspaces.length === 0) return;
+
+      let targetWorkspaceId = null;
+
+      if (pathname.startsWith('/board')) {
+        try {
+          const boardData = await getBoard(params.id);
+          if (boardData?.project) {
+            targetWorkspaceId = boardData.project.workspace_id;
+          }
+        } catch (err) {
+          console.error("Failed to resolve board workspace", err);
+        }
+      } 
+      else if (pathname.startsWith('/workspace')) {
+        targetWorkspaceId = params.id;
       }
-    }
-  }, [params.id, workspaces]);
+
+      if (targetWorkspaceId) {
+        const workspace = workspaces.find(w => w.id === targetWorkspaceId);
+        if (workspace && workspace.id !== activeWorkspace?.id) {
+          setActiveWorkspace(workspace);
+          const projectList = await getProjects(workspace.id);
+          setProjects(projectList || []);
+        } else if (workspace) {
+           if (projects.length === 0) {
+              const projectList = await getProjects(workspace.id);
+              setProjects(projectList || []);
+           }
+        }
+      }
+    };
+
+    syncSidebarState();
+  }, [params.id, pathname, workspaces]); 
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -51,7 +80,7 @@ export default function Sidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (pathname === '/login' || pathname === '/register') return null;
+  if (pathname === '/' || pathname === '/login' || pathname === '/register') return null;
 
   return (
     <aside 
@@ -182,7 +211,7 @@ export default function Sidebar() {
                   className={`
                     group flex items-center gap-3 px-2 py-1.5 rounded-lg text-sm transition-all
                     ${pathname === `/board/${proj.id}` 
-                      ? 'bg-white dark:bg-[#2B2D33] text-blue-600 shadow-sm border border-gray-100 dark:border-gray-700' 
+                      ? 'bg-white dark:bg-[#2B2D33] text-gray-800 dark:text-gray-200 shadow-sm' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2B2D33]'}
                   `}
                 >

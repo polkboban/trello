@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react'; // Keep existing imports
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   DndContext, 
@@ -21,7 +21,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus } from 'lucide-react';
 import { updateProjectOrder, createProject } from '@/actions/project';
 
-// ... Keep SortableBoardCard component exactly as it is ...
 function SortableBoardCard({ project }) {
   const {
     attributes,
@@ -36,21 +35,26 @@ function SortableBoardCard({ project }) {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 50 : 'auto',
-    opacity: isDragging ? 0.3 : 1,
+    opacity: isDragging ? 0 : 1, 
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="group relative bg-white dark:bg-[#2B2D33] h-36 rounded-2xl p-5 shadow-sm hover:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+      // GLASSMORPHISM STYLES APPLIED HERE
+      className="group relative h-36 rounded-2xl p-5 flex flex-col justify-between overflow-hidden transition-all duration-300
+                 bg-white/40 dark:bg-black/20 
+                 backdrop-blur-xl backdrop-saturate-150
+                 border border-white/50 dark:border-white/10
+                 shadow-lg hover:shadow-2xl hover:scale-[1.02] hover:bg-white/60 dark:hover:bg-black/30"
     >
-      {/* DRAG HANDLE */}
       <button 
         type="button" 
         {...attributes} 
         {...listeners}
-        className="absolute top-3 right-3 p-2 text-gray-400 hover:text-blue-500 cursor-grab active:cursor-grabbing z-20 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors touch-none"
+        className="absolute top-3 right-3 p-2 text-gray-500/70 hover:text-blue-500 cursor-grab active:cursor-grabbing z-20 
+                   rounded-md transition-colors touch-none"
         title="Drag to reorder"
       >
         <GripVertical size={18} />
@@ -59,13 +63,14 @@ function SortableBoardCard({ project }) {
       <Link href={`/board/${project.id}`} className="absolute inset-0 z-10" />
       
       <div>
-        <div className="w-10 h-1 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 mb-4"></div>
-        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 truncate pr-8">{project.name}</h3>
+        {/* Adjusted gradient to be slightly softer to match glass */}
+        <div className="w-10 h-1 rounded-full bg-gradient-to-r from-blue-400/80 to-indigo-500/80 mb-4 backdrop-blur-sm"></div>
+        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 truncate pr-8 drop-shadow-sm">{project.name}</h3>
       </div>
       
       <div className="flex items-center justify-between mt-auto relative z-10 pointer-events-none">
-        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Kanban Board</span>
-        <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[10px] text-gray-500">
+        <span className="text-xs font-semibold text-gray-500/80 dark:text-gray-400 uppercase tracking-wider">Kanban Board</span>
+        <div className="w-6 h-6 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center text-[10px] text-gray-600 dark:text-gray-300 border border-white/20">
            {project.name.charAt(0)}
         </div>
       </div>
@@ -73,15 +78,14 @@ function SortableBoardCard({ project }) {
   );
 }
 
-// --- Main Grid Component ---
 export default function BoardList({ initialProjects, workspaceId }) {
   const [projects, setProjects] = useState(initialProjects);
   const [activeId, setActiveId] = useState(null);
-  const [isMounted, setIsMounted] = useState(false); // <--- 1. Add Mounted State
+  const [isMounted, setIsMounted] = useState(false); 
 
   useEffect(() => { 
     setProjects(initialProjects); 
-    setIsMounted(true); // <--- 2. Set to true on client mount
+    setIsMounted(true); 
   }, [initialProjects]);
 
   const sensors = useSensors(
@@ -116,40 +120,40 @@ export default function BoardList({ initialProjects, workspaceId }) {
 
   const activeProject = projects.find(p => p.id === activeId);
 
-  // 3. PREVENT SERVER RENDERING OF DND CONTEXT
-  // If we are on the server (not mounted), we return null or a simple loading state
-  // This prevents the mismatched IDs from breaking the app.
   if (!isMounted) {
     return null; 
   }
 
   return (
     <DndContext 
-      id="board-dnd-context" // <--- 4. (Optional) Adding a stable ID also helps
+      id="board-dnd-context" 
       sensors={sensors} 
       collisionDetection={closestCenter} 
       onDragStart={handleDragStart} 
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4">
         
-        {/* Create New Board Card */}
-        <div className="h-36 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all group relative">
+        {/* Create New Board Card - Glass Style */}
+        <div className="h-36 rounded-2xl transition-all group relative
+                        bg-white/20 dark:bg-white/5 
+                        backdrop-blur-sm border-2 border-dashed border-white/40 dark:border-white/10
+                        hover:bg-white/30 dark:hover:bg-white/10 hover:border-blue-400/50 hover:shadow-lg">
           <form action={createProject} className="h-full w-full">
              <input type="hidden" name="workspaceId" value={workspaceId} />
              
              <input 
               name="name" 
               placeholder="Create new board..." 
-              className="absolute inset-0 w-full h-full bg-transparent text-center text-transparent focus:text-gray-800 dark:focus:text-white placeholder-transparent focus:placeholder-gray-400 z-10 cursor-pointer focus:cursor-text outline-none text-lg font-medium p-6"
+              className="absolute inset-0 w-full h-full bg-transparent text-center text-transparent focus:text-gray-800 dark:focus:text-white placeholder-transparent focus:placeholder-gray-500/70 z-10 cursor-pointer focus:cursor-text outline-none text-lg font-medium p-6 transition-all"
               required
             />
             
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none group-focus-within:opacity-0 transition-opacity">
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-blue-500 group-hover:scale-110 transition-all">
+              <div className="w-10 h-10 rounded-full bg-white/40 dark:bg-white/5 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:text-blue-600 group-hover:scale-110 transition-all border border-white/20">
                 <Plus size={24} />
               </div>
-              <span className="text-sm font-medium text-gray-500 group-hover:text-blue-600 mt-2">New Board</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-blue-600 mt-2">New Board</span>
             </div>
           </form>
         </div>
@@ -163,12 +167,16 @@ export default function BoardList({ initialProjects, workspaceId }) {
 
         <DragOverlay>
           {activeId && activeProject ? (
-             <div className="bg-white dark:bg-[#2B2D33] h-36 rounded-2xl p-5 shadow-2xl border border-blue-500 scale-105 cursor-grabbing opacity-90 flex flex-col justify-between">
+             <div className="h-36 rounded-2xl p-5 flex flex-col justify-between
+                             bg-white/60 dark:bg-black/40 
+                             backdrop-blur-2xl backdrop-saturate-200
+                             border border-blue-400/50 dark:border-blue-500/50
+                             scale-105 cursor-grabbing z-50">
                 <div>
-                  <div className="w-10 h-1 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 mb-4"></div>
-                  <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{activeProject.name}</h3>
+                  <div className="w-10 h-1 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 mb-4 shadow-sm"></div>
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-white">{activeProject.name}</h3>
                 </div>
-                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Moving...</span>
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Moving...</span>
              </div>
           ) : null}
         </DragOverlay>
