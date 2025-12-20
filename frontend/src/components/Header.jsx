@@ -3,6 +3,7 @@
 import { Star, Bell } from "lucide-react";
 import { useState } from "react";
 import UserMenu from "./UserMenu";
+import NotificationPopover from "./NotificationPopover";
 
 export default function Header({ title = "Workspace" }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -55,7 +56,8 @@ export default function Header({ title = "Workspace" }) {
           {/* Notification dot */}
           <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full"></span>
         </button>
-
+        
+        <NotificationPopover />
         <UserMenu />
       </div>
     </header>

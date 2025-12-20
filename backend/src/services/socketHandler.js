@@ -35,6 +35,10 @@ const socketHandler = (io) => {
 
     socket.join(`user_${socket.user.id}`);
 
+    socket.on('task_deleted', (data) => {
+      socket.to(`project_${data.projectId}`).emit('task_deleted', data);
+    });
+
     socket.on('join_workspace', async (workspaceId) => {
       try {
         const { data: membership } = await supabaseAdmin

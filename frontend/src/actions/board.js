@@ -2,8 +2,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-// ... Keep getBoard and updateTaskPosition as they are ...
-
 export async function getBoard(boardId) {
   const supabase = await createClient();
   const { data: project } = await supabase.from('projects').select('*').eq('id', boardId).single();
@@ -18,8 +16,6 @@ export async function updateTaskPosition(taskId, newStatus, newPosition) {
   revalidatePath(`/board/${taskId}`);
 }
 
-// --- NEW ACTIONS ---
-
 export async function createTask(formData) {
   const supabase = await createClient();
   const title = formData.get('title');
@@ -30,16 +26,19 @@ export async function createTask(formData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  await supabase.from('tasks').insert({
+  const { data, error } = await supabase.from('tasks').insert({
     title,
     project_id: projectId,
     status,
     priority,
     created_by: user.id,
     position: new Date().getTime()
-  });
+  }).select().single();
+
+  if (error) throw new Error(error.message);
 
   revalidatePath(`/board/${projectId}`);
+  return data; // Return the new task object
 }
 
 export async function updateTask(formData) {
@@ -54,12 +53,21 @@ export async function updateTask(formData) {
     due_date: formData.get('due_date') || null,
   };
 
-  await supabase.from('tasks').update(updates).eq('id', taskId);
+  const { data, error } = await supabase.from('tasks')
+    .update(updates)
+    .eq('id', taskId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
   revalidatePath(`/board/${projectId}`);
+  return data; // Return the updated task object
 }
 
 export async function deleteTask(taskId, projectId) {
   const supabase = await createClient();
   await supabase.from('tasks').delete().eq('id', taskId);
   revalidatePath(`/board/${projectId}`);
+  return taskId; // Return the ID so we know what to remove
 }
