@@ -5,19 +5,18 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { updateTaskPosition } from '@/actions/board';
 import BoardColumn from '@/components/BoardColumn';
 import TaskCard from '@/components/TaskCard';
-import TaskModal from '@/components/TaskModal'; // Import the new modal
+import TaskModal from '@/components/TaskModal'; 
 
 const COLUMNS = ['todo', 'in_progress', 'review', 'done'];
 const TITLES = { todo: 'To Do', in_progress: 'In Progress', review: 'Review', done: 'Done' };
 
 export default function BoardClient({ initialTasks, projectId }) {
   const [tasks, setTasks] = useState(initialTasks);
-  const [activeDragTask, setActiveDragTask] = useState(null); // Renamed for clarity
+  const [activeDragTask, setActiveDragTask] = useState(null); 
   
-  // --- NEW: Modal State ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [selectedColumn, setSelectedColumn] = useState(null); // For creating new tasks in a specific column
+  const [selectedColumn, setSelectedColumn] = useState(null); 
 
   useEffect(() => {
     setTasks(initialTasks);
@@ -28,8 +27,6 @@ export default function BoardClient({ initialTasks, projectId }) {
       activationConstraint: { distance: 5 },
     })
   );
-
-  // --- Handlers ---
 
   const openNewTaskModal = (columnId) => {
     setSelectedColumn(columnId);
@@ -47,7 +44,6 @@ export default function BoardClient({ initialTasks, projectId }) {
     setActiveDragTask(tasks.find(t => t.id === e.active.id));
   };
 
-  // ... (Keep handleDragOver and handleDragEnd exactly as they were in your previous code) ...
   const handleDragOver = (e) => {
     const { active, over } = e;
     if (!over) return;
@@ -115,7 +111,6 @@ export default function BoardClient({ initialTasks, projectId }) {
         </DragOverlay>
       </DndContext>
 
-      {/* The Modal */}
       <TaskModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

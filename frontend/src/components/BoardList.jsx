@@ -42,7 +42,6 @@ function SortableBoardCard({ project }) {
     <div
       ref={setNodeRef}
       style={style}
-      // GLASSMORPHISM STYLES APPLIED HERE
       className="group relative h-36 rounded-2xl p-5 flex flex-col justify-between overflow-hidden transition-all duration-300
                  bg-white/40 dark:bg-black/20 
                  backdrop-blur-xl backdrop-saturate-150
@@ -63,7 +62,6 @@ function SortableBoardCard({ project }) {
       <Link href={`/board/${project.id}`} className="absolute inset-0 z-10" />
       
       <div>
-        {/* Adjusted gradient to be slightly softer to match glass */}
         <div className="w-10 h-1 rounded-full bg-gradient-to-r from-blue-400/80 to-indigo-500/80 mb-4 backdrop-blur-sm"></div>
         <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 truncate pr-8 drop-shadow-sm">{project.name}</h3>
       </div>
@@ -134,7 +132,6 @@ export default function BoardList({ initialProjects, workspaceId }) {
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4">
         
-        {/* Create New Board Card - Glass Style */}
         <div className="h-36 rounded-2xl transition-all group relative
                         bg-white/20 dark:bg-white/5 
                         backdrop-blur-sm border-2 border-dashed border-white/40 dark:border-white/10
@@ -158,7 +155,6 @@ export default function BoardList({ initialProjects, workspaceId }) {
           </form>
         </div>
 
-        {/* Sortable List */}
         <SortableContext items={projects} strategy={rectSortingStrategy}>
           {projects.map((project) => (
             <SortableBoardCard key={project.id} project={project} />

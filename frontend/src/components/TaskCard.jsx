@@ -1,5 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Clock } from 'lucide-react';
 
 export default function TaskCard({ task, onClick }) {
   const {
@@ -14,14 +15,13 @@ export default function TaskCard({ task, onClick }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.3 : 1, 
+    opacity: isDragging ? 0.5 : 1, 
   };
 
-  // Priority Colors
-  const priorityColors = {
-    high: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
-    medium: 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400',
-    low: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
+  const priorityColor = {
+    high: 'bg-red-500',
+    medium: 'bg-orange-400',
+    low: 'bg-blue-400',
   };
 
   return (
@@ -31,25 +31,38 @@ export default function TaskCard({ task, onClick }) {
       {...attributes} 
       {...listeners}
       onClick={onClick} 
-      className="group bg-white dark:bg-[#2C2D31] rounded-xl p-4 shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 cursor-pointer transition-all relative"
+      className="group bg-white dark:bg-[#2B2D33] rounded-lg p-3.5 shadow-[0_2px_4px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-gray-700/50 cursor-pointer transition-all duration-200 select-none"
     >
-      <div className={`absolute left-0 top-3 bottom-3 w-1 rounded-r-full ${task.priority === 'high' ? 'bg-red-500' : task.priority === 'medium' ? 'bg-orange-400' : 'bg-blue-400'}`}></div>
-
-      <div className="pl-3">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-tight mb-2">{task.title}</h3>
-        
-        <div className="flex justify-between items-center mt-3">
-           <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${priorityColors[task.priority || 'medium']}`}>
-             {task.priority || 'medium'}
-           </span>
-
-           {task.due_date && (
-             <span className="text-[10px] font-medium text-gray-400">
-               {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-             </span>
-           )}
-        </div>
+      {/* Tags & Priority */}
+      <div className="flex items-center justify-between mb-2">
+         <div className="flex items-center gap-2">
+            <div className={`w-1.5 h-1.5 rounded-full ${priorityColor[task.priority || 'medium']}`} />
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+              {task.priority || 'Normal'}
+            </span>
+         </div>
       </div>
+
+      <h3 className="text-[13px] font-medium text-gray-800 dark:text-gray-200 leading-snug mb-3">
+        {task.title}
+      </h3>
+      
+      {/* Footer Meta */}
+      {(task.due_date || task.assignee) && (
+        <div className="flex items-center justify-between pt-2 border-t border-gray-50 dark:border-gray-700/50">
+           {task.due_date && (
+             <div className={`flex items-center gap-1.5 text-[11px] font-medium ${new Date(task.due_date) < new Date() ? 'text-red-500' : 'text-gray-400'}`}>
+               <Clock size={12} />
+               <span>
+                 {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+               </span>
+             </div>
+           )}
+           
+           {/* Tiny avatar placeholder */}
+           <div className="w-5 h-5 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700" />
+        </div>
+      )}
     </div>
   );
 }
