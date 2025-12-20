@@ -1,51 +1,61 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Bell, Check, X } from 'lucide-react';
+import { Bell, Check, X, Mail } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { respondToInvitation } from '@/actions/member';
+import { acceptWorkspaceInvite, rejectWorkspaceInvite } from '@/actions/member'; // Import new actions
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function NotificationPopover() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [invites, setInvites] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const supabase = createClient();
 
-  // Fetch notifications
-  useEffect(() => {
-    const fetchNotifs = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  // Fetch Invites directly
+  const fetchInvites = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      const { data } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      setNotifications(data || []);
-      setUnreadCount(data?.length || 0);
-    };
-
-    fetchNotifs();
+    // Fetch invites where email == user.email
+    const { data } = await supabase
+      .from('workspace_invitations')
+      .select(`
+        id,
+        role,
+        created_at,
+        workspace:workspaces ( id, name )
+      `)
+      .eq('email', user.email);
     
-    // Optional: Realtime subscription here
+    setInvites(data || []);
+    setUnreadCount(data?.length || 0);
+  };
+
+  useEffect(() => {
+    fetchInvites();
+    
+    // Subscribe to changes in invitations table
     const channel = supabase
-      .channel('notifs')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, 
-        () => fetchNotifs()
+      .channel('invites_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'workspace_invitations' }, 
+        () => fetchInvites()
       )
       .subscribe();
 
     return () => supabase.removeChannel(channel);
   }, []);
 
-  const handleResponse = async (id, accept) => {
-    // Optimistic UI update
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const handleAccept = async (id) => {
+    // Optimistic UI
+    setInvites(prev => prev.filter(i => i.id !== id));
     setUnreadCount(prev => Math.max(0, prev - 1));
-    
-    await respondToInvitation(id, accept);
+    await acceptWorkspaceInvite(id);
+  };
+
+  const handleReject = async (id) => {
+    setInvites(prev => prev.filter(i => i.id !== id));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+    await rejectWorkspaceInvite(id);
   };
 
   return (
@@ -71,34 +81,45 @@ export default function NotificationPopover() {
               className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#2B2D33] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50"
             >
               <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-white/5">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Notifications</h3>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Pending Invitations
+                </h3>
               </div>
 
               <div className="max-h-[300px] overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <div className="p-8 text-center text-gray-400 text-sm">No new notifications</div>
+                {invites.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400 text-sm">No new invitations</div>
                 ) : (
-                  notifications.map(notif => (
-                    <div key={notif.id} className="p-4 border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{notif.title}</p>
-                      <p className="text-xs text-gray-500 mt-1 mb-3 leading-relaxed">{notif.message}</p>
+                  invites.map(invite => (
+                    <div key={invite.id} className="p-4 border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                      <div className="flex items-start gap-3 mb-3">
+                         <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600">
+                           <Mail size={16} />
+                         </div>
+                         <div>
+                           <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                             {invite.workspace?.name || 'Unknown Workspace'}
+                           </p>
+                           <p className="text-xs text-gray-500">
+                             Invited you to join as <span className="font-medium capitalize">{invite.role}</span>
+                           </p>
+                         </div>
+                      </div>
                       
-                      {notif.type === 'invite' && (
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={() => handleResponse(notif.id, true)}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition"
-                          >
-                            <Check size={12} /> Accept
-                          </button>
-                          <button 
-                            onClick={() => handleResponse(notif.id, false)}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 text-xs font-bold rounded-lg transition"
-                          >
-                            <X size={12} /> Reject
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleAccept(invite.id)}
+                          className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition"
+                        >
+                          <Check size={12} /> Accept
+                        </button>
+                        <button 
+                          onClick={() => handleReject(invite.id)}
+                          className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 text-xs font-bold rounded-lg transition"
+                        >
+                          <X size={12} /> Reject
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}

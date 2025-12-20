@@ -69,7 +69,7 @@ export default function SettingsPage({ params }) {
     <div className="p-8 max-w-4xl mx-auto space-y-8 mt-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Workspace Settings</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">Manage your workspace preferences and danger zones.</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">Manage your workspace preferences</p>
       </div>
 
       <div className="bg-white dark:bg-[#2B2D33] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">

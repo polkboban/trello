@@ -51,12 +51,6 @@ export default function Header({ title = "Workspace" }) {
 
       {/* Right Section */}
       <div className="flex items-center gap-4">
-        <button className="relative hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-full transition">
-          <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-          {/* Notification dot */}
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full"></span>
-        </button>
-        
         <NotificationPopover />
         <UserMenu />
       </div>
