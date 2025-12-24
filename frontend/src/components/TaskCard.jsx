@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Clock } from 'lucide-react';
+import { Clock, CheckSquare, MoreHorizontal, MessageSquare } from 'lucide-react';
 
 export default function TaskCard({ task, onClick }) {
   const {
@@ -15,14 +15,17 @@ export default function TaskCard({ task, onClick }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1, 
+    opacity: isDragging ? 0.3 : 1, 
   };
 
-  const priorityColor = {
-    high: 'bg-red-500',
-    medium: 'bg-orange-400',
-    low: 'bg-blue-400',
+  // Mock tags based on priority/status
+  const getTags = () => {
+    if (task.priority === 'high') return [{ text: 'Inception', color: 'bg-[#D1FADF] text-[#027A48]' }, { text: 'Trigger', color: 'bg-[#E0F2FE] text-[#026AA2]' }];
+    if (task.priority === 'medium') return [{ text: 'Goals', color: 'bg-[#FEF0C7] text-[#B54708]' }];
+    return [];
   };
+
+  const tags = getTags();
 
   return (
     <div 
@@ -31,38 +34,65 @@ export default function TaskCard({ task, onClick }) {
       {...attributes} 
       {...listeners}
       onClick={onClick} 
-      className="group bg-white dark:bg-[#2B2D33] rounded-lg p-3.5 shadow-[0_2px_4px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-gray-700/50 cursor-pointer transition-all duration-200 select-none"
+      // Updated BG to #26272F (Slightly lighter than board for contrast)
+      // Updated Border to #3E414C
+      className="group bg-[#26272F] hover:bg-[#2E303A] rounded-xl p-4 mb-3 border border-[#3E414C] cursor-pointer transition-all duration-200 select-none shadow-sm hover:border-gray-600"
     >
-      {/* Tags & Priority */}
-      <div className="flex items-center justify-between mb-2">
-         <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${priorityColor[task.priority || 'medium']}`} />
-            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
-              {task.priority || 'Normal'}
-            </span>
-         </div>
+      {/* Header: Title & Menu */}
+      <div className="flex justify-between items-start mb-2">
+         <h3 className="text-[14px] font-semibold text-gray-100 leading-snug line-clamp-2">
+          {task.title}
+        </h3>
+        <button className="text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity -mr-2 -mt-2 p-1">
+          <MoreHorizontal size={16} />
+        </button>
       </div>
 
-      <h3 className="text-[13px] font-medium text-gray-800 dark:text-gray-200 leading-snug mb-3">
-        {task.title}
-      </h3>
-      
-      {/* Footer Meta */}
-      {(task.due_date || task.assignee) && (
-        <div className="flex items-center justify-between pt-2 border-t border-gray-50 dark:border-gray-700/50">
-           {task.due_date && (
-             <div className={`flex items-center gap-1.5 text-[11px] font-medium ${new Date(task.due_date) < new Date() ? 'text-red-500' : 'text-gray-400'}`}>
-               <Clock size={12} />
-               <span>
-                 {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-               </span>
-             </div>
-           )}
-           
-           {/* Tiny avatar placeholder */}
-           <div className="w-5 h-5 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700" />
+      {/* Description Preview */}
+      <p className="text-gray-400 text-[12px] mb-3 line-clamp-2">
+        {task.description || "No description provided..."}
+      </p>
+
+      {/* Tags */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {tags.map((tag, i) => (
+            <span key={i} className={`px-2 py-0.5 rounded text-[10px] font-bold ${tag.color}`}>
+              {tag.text}
+            </span>
+          ))}
         </div>
       )}
+
+      {/* Meta Row */}
+      <div className="flex items-center justify-between pt-3 border-t border-[#3E414C]">
+         <div className="flex items-center gap-4">
+            {task.due_date && (
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+                <Clock size={12} />
+                <span>
+                  {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+            )}
+            
+             <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+                <MessageSquare size={12} />
+                <span>3</span>
+             </div>
+         </div>
+
+         <div className="flex items-center gap-1.5">
+           {task.priority === 'high' && <span className="text-[10px] font-bold text-red-400">Highest</span>}
+           {task.priority === 'medium' && <span className="text-[10px] font-bold text-orange-400">Medium</span>}
+           {task.priority === 'low' && <span className="text-[10px] font-bold text-blue-400">Low</span>}
+           
+           <div className="flex -space-x-2 ml-2">
+              <div className="w-5 h-5 rounded-full bg-indigo-500 border border-[#26272F]" />
+              <div className="w-5 h-5 rounded-full bg-purple-500 border border-[#26272F]" />
+           </div>
+         </div>
+      </div>
     </div>
   );
 }

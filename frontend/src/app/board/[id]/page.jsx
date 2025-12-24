@@ -1,7 +1,7 @@
 import { getBoard } from '@/actions/board';
 import BoardClient from './BoardClient';
 import { redirect } from 'next/navigation';
-import { Settings2, Filter, Share } from 'lucide-react';
+import { Settings2, Filter, Share, ChevronDown } from 'lucide-react';
 
 export default async function BoardPage({ params }) {
   const { id } = await params;
@@ -10,49 +10,48 @@ export default async function BoardPage({ params }) {
   if (!data) redirect('/dashboard');
 
   return (
-    <div className="h-full flex flex-col bg-[#F7F8FA] dark:bg-[#1E1F22] relative">
+    // Changed bg from #0D0E12 to #1E1F22 (Lighter/Standard Dark)
+    <div className="h-full flex flex-col bg-[#1E1F22] text-gray-200 relative">
+      
+      {/* --- Dot Matrix Background --- */}
+      {/* Adjusted dot color to #32343A so it is visible on the lighter bg */}
       <div 
         className="absolute inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: 'radial-gradient(circle, #E5E7EB 1.5px, transparent 1.5px)',
-          backgroundSize: '24px 24px',
-          opacity: 0.8 
-        }}
-      ></div>
-      <div 
-        className="absolute inset-0 pointer-events-none z-0 hidden dark:block"
-        style={{
-          backgroundImage: 'radial-gradient(circle, #2B2D33 1.5px, transparent 1.5px)',
+          backgroundImage: 'radial-gradient(circle, #32343A 1.5px, transparent 1.5px)',
           backgroundSize: '24px 24px',
         }}
       ></div>
 
-      <div className="relative z-10 px-8 py-6 flex justify-between items-end flex-shrink-0">
+      {/* --- Header --- */}
+      {/* Changed backdrop bg to match the new lighter theme */}
+      <div className="relative z-10 px-6 py-5 flex justify-between items-center border-b border-[#2B2D33] bg-[#1E1F22]/80 backdrop-blur-sm">
         <div>
-          <div className="flex items-center gap-3 mb-1 ml-5">
-             <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <div className="flex items-center gap-3">
+             <h1 className="text-xl font-bold text-white tracking-tight">
                {data.project.name}
              </h1>
-             <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[11px] font-bold uppercase tracking-wider">
-               Board
-             </span>
+             <div className="px-2.5 py-1 rounded-full bg-[#2B2D33] border border-[#3E414C] text-gray-400 text-xs font-medium flex items-center gap-1">
+               Board <ChevronDown size={12} />
+             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-[#2B2D33] text-gray-500 transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700">
+        <div className="flex items-center gap-3">
+          <button className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-[#2B2D33] text-gray-400 transition-all border border-transparent hover:border-[#3E414C]">
             <Filter size={18} />
           </button>
-          <button className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-[#2B2D33] text-gray-500 transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-700">
+          <button className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-[#2B2D33] text-gray-400 transition-all border border-transparent hover:border-[#3E414C]">
             <Settings2 size={18} />
           </button>
-          <button className="h-9 px-4 flex items-center gap-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-black text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-gray-500/10">
+          <button className="h-9 px-4 flex items-center gap-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20">
             <Share size={16} /> Share
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-x-auto overflow-y-hidden relative z-10 px-6 pb-4">
+      {/* --- Board Content --- */}
+      <div className="relative z-10 flex-1 overflow-x-auto overflow-y-hidden px-6 pt-6 pb-4">
         <BoardClient initialTasks={data.tasks} projectId={id} />
       </div>
     </div>

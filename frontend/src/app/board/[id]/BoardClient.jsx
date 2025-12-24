@@ -8,45 +8,30 @@ import TaskCard from '@/components/TaskCard';
 import TaskModal from '@/components/TaskModal';
 import { useSocket } from '@/hooks/useSocket'; 
 
+// Updated Columns to match the image
 const COLUMNS = ['todo', 'in_progress', 'review', 'done'];
-const TITLES = { todo: 'To Do', in_progress: 'In Progress', review: 'Review', done: 'Done' };
+const TITLES = { 
+  todo: 'New tasks', 
+  in_progress: 'Working on', 
+  review: 'Completed', 
+  done: 'Outdated' 
+};
 
 export default function BoardClient({ initialTasks, projectId }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [activeDragTask, setActiveDragTask] = useState(null);
-  
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedColumn, setSelectedColumn] = useState(null);
 
-  // --- 1. Initialize Socket Connection ---
   const socket = useSocket(projectId);
 
-  // --- 2. Listen for Real-Time Updates ---
   useEffect(() => {
     if (!socket) return;
-
-    const onTaskMoved = (data) => {
-      // Optimistic update for moves from other users
-      setTasks(prev => prev.map(t => 
-        t.id === data.taskId ? { ...t, status: data.newStatus } : t
-      ));
-    };
-
-    const onTaskCreated = (newTask) => {
-      setTasks(prev => [...prev, newTask]);
-    };
-
-    const onTaskUpdated = (updatedTask) => {
-      setTasks(prev => prev.map(t => 
-        t.id === updatedTask.id ? updatedTask : t
-      ));
-    };
-
-    const onTaskDeleted = ({ taskId }) => {
-      setTasks(prev => prev.filter(t => t.id !== taskId));
-    };
+    const onTaskMoved = (data) => setTasks(prev => prev.map(t => t.id === data.taskId ? { ...t, status: data.newStatus } : t));
+    const onTaskCreated = (newTask) => setTasks(prev => [...prev, newTask]);
+    const onTaskUpdated = (updatedTask) => setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+    const onTaskDeleted = ({ taskId }) => setTasks(prev => prev.filter(t => t.id !== taskId));
 
     socket.on('task_moved', onTaskMoved);
     socket.on('task_created', onTaskCreated);
@@ -61,18 +46,11 @@ export default function BoardClient({ initialTasks, projectId }) {
     };
   }, [socket]);
 
-  // Sync with server data if page revalidates
-  useEffect(() => {
-    setTasks(initialTasks);
-  }, [initialTasks]);
+  useEffect(() => { setTasks(initialTasks); }, [initialTasks]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
-
-  // --- Handlers ---
 
   const openNewTaskModal = (columnId) => {
     setSelectedColumn(columnId);
@@ -86,9 +64,7 @@ export default function BoardClient({ initialTasks, projectId }) {
     setIsModalOpen(true);
   };
 
-  const handleDragStart = (e) => {
-    setActiveDragTask(tasks.find(t => t.id === e.active.id));
-  };
+  const handleDragStart = (e) => setActiveDragTask(tasks.find(t => t.id === e.active.id));
 
   const handleDragOver = (e) => {
     const { active, over } = e;
@@ -109,9 +85,7 @@ export default function BoardClient({ initialTasks, projectId }) {
       setTasks(prev => {
         const activeIndex = prev.findIndex(t => t.id === activeId);
         const overIndex = prev.findIndex(t => t.id === overId);
-        if (prev[activeIndex].status !== prev[overIndex].status) {
-          prev[activeIndex].status = prev[overIndex].status;
-        }
+        if (prev[activeIndex].status !== prev[overIndex].status) prev[activeIndex].status = prev[overIndex].status;
         return arrayMove(prev, activeIndex, overIndex);
       });
     }
@@ -124,23 +98,13 @@ export default function BoardClient({ initialTasks, projectId }) {
 
     const activeId = active.id;
     const overId = over.id;
-    const currentTask = tasks.find(t => t.id === activeId);
-    
-    // Calculate new status
+    let currentTask = tasks.find(t => t.id === activeId);
     let newStatus = currentTask.status;
+    
     if (COLUMNS.includes(overId)) newStatus = overId;
     else if (tasks.find(t => t.id === overId)) newStatus = tasks.find(t => t.id === overId).status;
 
-    // 1. Emit Socket Event (Realtime broadcast)
-    if (socket) {
-      socket.emit('task_moved', {
-        taskId: activeId,
-        newStatus: newStatus,
-        projectId: projectId,
-      });
-    }
-
-    // 2. Persist to Database (Server Action)
+    if (socket) socket.emit('task_moved', { taskId: activeId, newStatus, projectId });
     await updateTaskPosition(activeId, newStatus, new Date().getTime());
   };
 
@@ -153,7 +117,7 @@ export default function BoardClient({ initialTasks, projectId }) {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex h-full overflow-x-auto p-6 gap-6">
+        <div className="flex h-full overflow-x-auto gap-8">
           {COLUMNS.map(colId => (
             <BoardColumn 
               key={colId} 
@@ -169,7 +133,6 @@ export default function BoardClient({ initialTasks, projectId }) {
           {activeDragTask ? <TaskCard task={activeDragTask} /> : null}
         </DragOverlay>
       </DndContext>
-
       <TaskModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
