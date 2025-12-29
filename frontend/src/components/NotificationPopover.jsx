@@ -11,12 +11,10 @@ export default function NotificationPopover() {
   const [unreadCount, setUnreadCount] = useState(0);
   const supabase = createClient();
 
-  // Fetch Invites directly
   const fetchInvites = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch invites where email == user.email
     const { data } = await supabase
       .from('workspace_invitations')
       .select(`
@@ -34,7 +32,6 @@ export default function NotificationPopover() {
   useEffect(() => {
     fetchInvites();
     
-    // Subscribe to changes in invitations table
     const channel = supabase
       .channel('invites_realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'workspace_invitations' }, 
@@ -46,7 +43,6 @@ export default function NotificationPopover() {
   }, []);
 
   const handleAccept = async (id) => {
-    // Optimistic UI
     setInvites(prev => prev.filter(i => i.id !== id));
     setUnreadCount(prev => Math.max(0, prev - 1));
     await acceptWorkspaceInvite(id);

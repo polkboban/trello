@@ -1,4 +1,3 @@
-// frontend/src/hooks/useSocket.js
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { createClient } from '@/lib/supabase/client';
@@ -14,13 +13,14 @@ export const useSocket = (projectId) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      // Connect to the backend we just started on port 5000
-      socketInstance = io('http://localhost:5000', {
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+
+      socketInstance = io(socketUrl, {
         auth: { token: session.access_token },
       });
 
       socketInstance.on('connect', () => {
-        console.log('✅ Connected to Realtime Server');
+        console.log(' Connected to Realtime Server');
         if (projectId) {
           socketInstance.emit('join_project', projectId);
         }

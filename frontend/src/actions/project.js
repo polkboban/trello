@@ -45,7 +45,6 @@ export async function createProject(formData) {
 export async function updateProjectOrder(items) {
   const supabase = await createClient();
   
-  // We receive a list of { id, position }
   for (const item of items) {
     await supabase.rpc('update_project_position', {
       project_id: item.id,

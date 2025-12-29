@@ -116,7 +116,6 @@ export default function ColorBends({
           warpStrength={warpStrength}
         />
       </Canvas>
-      {/* Overlay for better text readability */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
     </div>
   );

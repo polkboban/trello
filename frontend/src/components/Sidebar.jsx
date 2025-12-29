@@ -29,7 +29,6 @@ export default function Sidebar() {
   const pathname = usePathname();
   const params = useParams(); 
 
-  // --- NEW: Auto-collapse on board view ---
   useEffect(() => {
     if (pathname.startsWith('/board')) {
       setIsCollapsed(true);
@@ -38,7 +37,6 @@ export default function Sidebar() {
     }
   }, [pathname]);
 
-  // --- REFACTORED: Load Workspaces ---
   const loadWorkspaces = async () => {
     const data = await getWorkspaces();
     setWorkspaces(data || []);
@@ -177,7 +175,6 @@ export default function Sidebar() {
                  ))}
                  <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2"></div>
                  
-                 {/* --- UPDATED BUTTON WITH CLICK HANDLER --- */}
                  <button 
                    onClick={() => {
                      setIsDropdownOpen(false);
@@ -256,7 +253,6 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      {/* --- RENDER WORKSPACE MODAL --- */}
       <WorkspaceModal 
         isOpen={isWorkspaceModalOpen}
         onClose={() => setIsWorkspaceModalOpen(false)}

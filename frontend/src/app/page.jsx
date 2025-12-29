@@ -56,14 +56,12 @@ export default async function Home() {
   return (
     <div className="min-h-screen text-white selection:bg-blue-500 selection:text-white overflow-hidden relative">
       
-      {/* --- NEW BACKGROUND --- */}
       <ColorBends 
         colors={['#0F2027', '#203A43', '#2C5364']} 
         speed={0.3}
         warpStrength={1.5}
       />
 
-      {/* --- Navbar --- */}
       <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-[#0B0C10]/20 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
@@ -86,7 +84,6 @@ export default async function Home() {
         </div>
       </nav>
 
-      {/* --- Hero Section --- */}
       <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 z-10">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-semibold tracking-wider mb-6 backdrop-blur-sm">
@@ -117,7 +114,6 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* --- Features Grid --- */}
       <div id="features" className="max-w-7xl mx-auto px-6 py-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FeatureCard 

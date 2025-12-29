@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Modal from './Modal';
 import { AlignLeft, Flag, CheckCircle2, Clock, Trash2 } from 'lucide-react';
 import { updateTask, deleteTask, createTask } from '@/actions/board';
-import Loader from './Loader'; // Assumes you created the Loader component we discussed
+import Loader from './Loader'; 
 
 export default function TaskModal({ isOpen, onClose, task, columnId, projectId, socket }) {
   const isEditing = !!task;
@@ -13,18 +13,15 @@ export default function TaskModal({ isOpen, onClose, task, columnId, projectId, 
     setLoading(true);
     try {
       if (isEditing) {
-        // 1. Run Server Action (Updates DB and returns the updated object)
+        
         const updatedTaskData = await updateTask(formData);
         
-        // 2. Broadcast to others via Socket
         if (socket) {
           socket.emit('task_updated', updatedTaskData);
         }
       } else {
-        // 1. Run Server Action (Creates in DB and returns new object)
         const newTaskData = await createTask(formData);
 
-        // 2. Broadcast to others via Socket
         if (socket) {
           socket.emit('task_created', newTaskData);
         }
@@ -42,10 +39,8 @@ export default function TaskModal({ isOpen, onClose, task, columnId, projectId, 
     if (!confirm('Are you sure you want to delete this task?')) return;
     setLoading(true);
     try {
-      // 1. Run Server Action
       await deleteTask(task.id, projectId);
 
-      // 2. Broadcast to others
       if (socket) {
         socket.emit('task_deleted', { taskId: task.id, projectId });
       }
@@ -64,7 +59,6 @@ export default function TaskModal({ isOpen, onClose, task, columnId, projectId, 
         {isEditing && <input type="hidden" name="taskId" value={task.id} />}
         {!isEditing && <input type="hidden" name="status" value={columnId} />}
 
-        {/* --- Title Section --- */}
         <div className="relative group">
            <input 
              name="title"
@@ -77,10 +71,8 @@ export default function TaskModal({ isOpen, onClose, task, columnId, projectId, 
            />
         </div>
 
-        {/* --- Metadata Grid --- */}
         <div className="grid grid-cols-2 gap-4">
           
-          {/* Priority Select */}
           <div className="bg-gray-50 dark:bg-[#2B2D33] p-3 rounded-xl border border-gray-100 dark:border-gray-700/50 hover:border-blue-500/30 transition-colors group">
              <div className="flex items-center gap-2 mb-1.5">
                 <Flag size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
@@ -97,7 +89,6 @@ export default function TaskModal({ isOpen, onClose, task, columnId, projectId, 
              </select>
           </div>
 
-          {/* Due Date Input */}
           <div className="bg-gray-50 dark:bg-[#2B2D33] p-3 rounded-xl border border-gray-100 dark:border-gray-700/50 hover:border-blue-500/30 transition-colors group">
              <div className="flex items-center gap-2 mb-1.5">
                 <Clock size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
@@ -112,7 +103,6 @@ export default function TaskModal({ isOpen, onClose, task, columnId, projectId, 
           </div>
         </div>
 
-        {/* --- Description Section --- */}
         <div className="space-y-3">
            <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
              <AlignLeft size={18} className="text-gray-400" />
@@ -126,7 +116,6 @@ export default function TaskModal({ isOpen, onClose, task, columnId, projectId, 
            />
         </div>
 
-        {/* --- Footer Actions --- */}
         <div className="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-800">
           {isEditing ? (
              <button 

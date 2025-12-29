@@ -3,7 +3,7 @@
 import { inviteMember } from '@/actions/member';
 import { useState, useRef } from 'react';
 import { UserPlus, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
-import Loader from './Loader'; // Assuming you have this from previous steps
+import Loader from './Loader'; 
 
 export default function InviteMemberForm({ workspaceId }) {
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,6 @@ export default function InviteMemberForm({ workspaceId }) {
       await inviteMember(formData);
       setSuccess(true);
       formRef.current?.reset();
-      // Hide success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err.message);

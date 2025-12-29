@@ -10,11 +10,8 @@ export default async function BoardPage({ params }) {
   if (!data) redirect('/dashboard');
 
   return (
-    // Changed bg from #0D0E12 to #1E1F22 (Lighter/Standard Dark)
     <div className="h-full flex flex-col bg-[#1E1F22] text-gray-200 relative">
-      
-      {/* --- Dot Matrix Background --- */}
-      {/* Adjusted dot color to #32343A so it is visible on the lighter bg */}
+    
       <div 
         className="absolute inset-0 pointer-events-none z-0"
         style={{
@@ -23,8 +20,6 @@ export default async function BoardPage({ params }) {
         }}
       ></div>
 
-      {/* --- Header --- */}
-      {/* Changed backdrop bg to match the new lighter theme */}
       <div className="relative z-10 px-6 py-5 flex justify-between items-center border-b border-[#2B2D33] bg-[#1E1F22]/80 backdrop-blur-sm">
         <div>
           <div className="flex items-center gap-3">
@@ -50,7 +45,6 @@ export default async function BoardPage({ params }) {
         </div>
       </div>
 
-      {/* --- Board Content --- */}
       <div className="relative z-10 flex-1 overflow-x-auto overflow-y-hidden px-6 pt-6 pb-4">
         <BoardClient initialTasks={data.tasks} projectId={id} />
       </div>

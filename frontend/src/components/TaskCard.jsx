@@ -34,11 +34,8 @@ export default function TaskCard({ task, onClick }) {
       {...attributes} 
       {...listeners}
       onClick={onClick} 
-      // Updated BG to #26272F (Slightly lighter than board for contrast)
-      // Updated Border to #3E414C
       className="group bg-[#26272F] hover:bg-[#2E303A] rounded-xl p-4 mb-3 border border-[#3E414C] cursor-pointer transition-all duration-200 select-none shadow-sm hover:border-gray-600"
     >
-      {/* Header: Title & Menu */}
       <div className="flex justify-between items-start mb-2">
          <h3 className="text-[14px] font-semibold text-gray-100 leading-snug line-clamp-2">
           {task.title}
@@ -48,12 +45,10 @@ export default function TaskCard({ task, onClick }) {
         </button>
       </div>
 
-      {/* Description Preview */}
       <p className="text-gray-400 text-[12px] mb-3 line-clamp-2">
         {task.description || "No description provided..."}
       </p>
 
-      {/* Tags */}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {tags.map((tag, i) => (
@@ -64,7 +59,6 @@ export default function TaskCard({ task, onClick }) {
         </div>
       )}
 
-      {/* Meta Row */}
       <div className="flex items-center justify-between pt-3 border-t border-[#3E414C]">
          <div className="flex items-center gap-4">
             {task.due_date && (

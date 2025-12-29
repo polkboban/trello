@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 export default function Modal({ open, onClose, title, children }) {
-  // Prevent scrolling when modal is open
   if (typeof window !== 'undefined') {
     if (open) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'unset';
@@ -28,7 +27,6 @@ export default function Modal({ open, onClose, title, children }) {
           onClick={(e) => e.stopPropagation()}
           className="bg-white dark:bg-[#1E1F22] w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 flex flex-col max-h-[90vh]"
         >
-          {/* Header */}
           <div className="flex justify-between items-center p-6 pb-2">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{title}</h2>
             <button
@@ -39,7 +37,6 @@ export default function Modal({ open, onClose, title, children }) {
             </button>
           </div>
 
-          {/* Content Scroll Area */}
           <div className="p-6 pt-2 overflow-y-auto custom-scrollbar">
             {children}
           </div>

@@ -38,7 +38,7 @@ export async function createTask(formData) {
   if (error) throw new Error(error.message);
 
   revalidatePath(`/board/${projectId}`);
-  return data; // Return the new task object
+  return data;
 }
 
 export async function updateTask(formData) {
@@ -62,12 +62,12 @@ export async function updateTask(formData) {
   if (error) throw new Error(error.message);
 
   revalidatePath(`/board/${projectId}`);
-  return data; // Return the updated task object
+  return data;
 }
 
 export async function deleteTask(taskId, projectId) {
   const supabase = await createClient();
   await supabase.from('tasks').delete().eq('id', taskId);
   revalidatePath(`/board/${projectId}`);
-  return taskId; // Return the ID so we know what to remove
+  return taskId; 
 }

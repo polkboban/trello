@@ -10,7 +10,6 @@ export default function ProtectedRoute({ children }) {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      // No token → redirect to login
       router.replace('/login');
     } else {
       setAuthorized(true);

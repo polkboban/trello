@@ -18,7 +18,7 @@ export async function login(prevState, formData) {
   }
 
   revalidatePath('/', 'layout');
-  redirect('/'); // Redirects to Home, which handles the workspace check
+  redirect('/'); 
 }
 
 export async function signup(prevState, formData) {

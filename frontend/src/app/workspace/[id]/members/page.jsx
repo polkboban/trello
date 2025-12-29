@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { inviteMember, removeMember, revokeInvitation } from '@/actions/member';
 import InviteMemberForm from '@/components/InviteMemberForm';
 import { Trash2, Shield, User, Clock, Ban } from 'lucide-react';
-import Image from 'next/image'; // Import Next Image
+import Image from 'next/image'; 
 
 export default async function MembersPage({ params }) {
   const { id } = await params;
@@ -13,7 +13,7 @@ export default async function MembersPage({ params }) {
 
   const supabaseAdmin = createAdminClient();
 
-  // Fetch Current User's Role
+ 
   const { data: currentMember } = await supabaseAdmin
     .from('workspace_members')
     .select('role')
@@ -23,7 +23,6 @@ export default async function MembersPage({ params }) {
 
   const isAdmin = ['admin', 'owner'].includes(currentMember?.role);
 
-  // 1. FETCH MEMBERS (Fixed: Added avatar_url to selection)
   const { data: members, error: memberError } = await supabaseAdmin
     .from('workspace_members')
     .select(`
@@ -42,7 +41,6 @@ export default async function MembersPage({ params }) {
 
   if (memberError) console.error("Member Fetch Error:", memberError);
 
-  // Fetch Pending Invites
   let pendingInvites = [];
   if (isAdmin) {
     const { data: invites } = await supabaseAdmin
@@ -64,7 +62,6 @@ export default async function MembersPage({ params }) {
 
       {isAdmin && <InviteMemberForm workspaceId={id} />}
 
-      {/* Pending Invites Section... (Keep as is) */}
       {isAdmin && pendingInvites.length > 0 && (
          <div className="space-y-3">
            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Pending Invitations</h3>
@@ -91,7 +88,6 @@ export default async function MembersPage({ params }) {
         </div>
       )}
 
-      {/* Active Members List */}
       <div className="space-y-4">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Active Members ({members?.length || 0})</h3>
         
@@ -102,7 +98,6 @@ export default async function MembersPage({ params }) {
         ) : (
           <div className="grid gap-3">
             {members.map((m) => {
-              // Logic: Use database avatar OR generate DiceBear fallback
               const displayName = m.user?.full_name || m.user?.email || 'User';
               const avatarSrc = m.user?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`;
 

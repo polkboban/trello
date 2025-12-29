@@ -12,17 +12,13 @@ export default function WorkspaceModal({ isOpen, onClose, onCreated }) {
   const handleSubmit = async (formData) => {
     setLoading(true);
     try {
-      // Assuming createWorkspace returns the new workspace or we redirect manually
       const result = await createWorkspace(formData);
       
-      // If onCreated callback is provided (to refresh sidebar list)
       if (onCreated) await onCreated();
       
-      // Attempt to redirect to the new workspace if an ID is returned
       if (result && result.id) {
         router.push(`/workspace/${result.id}`);
       } else {
-        // Fallback: Refresh page to update data
         router.refresh(); 
       }
       
@@ -38,14 +34,12 @@ export default function WorkspaceModal({ isOpen, onClose, onCreated }) {
     <Modal open={isOpen} onClose={onClose} title="Create New Workspace">
       <form action={handleSubmit} className="flex flex-col gap-6">
         
-        {/* --- Icon Placeholder --- */}
         <div className="flex justify-center my-2">
            <div className="h-16 w-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
               <Briefcase size={32} />
            </div>
         </div>
 
-        {/* --- Name Input --- */}
         <div className="space-y-2">
            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">
              Workspace Name
@@ -59,7 +53,6 @@ export default function WorkspaceModal({ isOpen, onClose, onCreated }) {
            />
         </div>
 
-        {/* --- Footer Actions --- */}
         <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
            <button 
              type="button" 

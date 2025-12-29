@@ -10,7 +10,6 @@ export default function Header({ title = "Workspace" }) {
 
   return (
     <header className="flex items-center justify-between bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border px-6 py-3 shadow-sm transition-colors rounded-[10px]">
-      {/* Left Section */}
       <div className="flex items-center gap-3">
         <button className="hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-full transition">
           <svg
@@ -40,7 +39,6 @@ export default function Header({ title = "Workspace" }) {
         </div>
       </div>
 
-      {/* Center Section */}
       <div className="flex items-center flex-1 justify-center">
         <input
           type="text"
@@ -49,7 +47,6 @@ export default function Header({ title = "Workspace" }) {
         />
       </div>
 
-      {/* Right Section */}
       <div className="flex items-center gap-4">
         <NotificationPopover />
         <UserMenu />
