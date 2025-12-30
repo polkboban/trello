@@ -27,7 +27,7 @@ export default async function BoardPage({ params }) {
                {data.project.name}
              </h1>
              <div className="px-2.5 py-1 rounded-full bg-[#2B2D33] border border-[#3E414C] text-gray-400 text-xs font-medium flex items-center gap-1">
-               Board <ChevronDown size={12} />
+               Board
              </div>
           </div>
         </div>

@@ -10,7 +10,6 @@ import { getWorkspaces } from '@/actions/workspace';
 import { getProjects } from '@/actions/project';
 import { getBoard } from '@/actions/board';
 import UserMenu from './UserMenu';
-// --- NEW IMPORT ---
 import WorkspaceModal from './WorkspaceModal';
 
 export default function Sidebar() {
@@ -22,7 +21,6 @@ export default function Sidebar() {
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
-  // --- NEW: Modal State ---
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   
   const dropdownRef = useRef(null);

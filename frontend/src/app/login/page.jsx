@@ -6,7 +6,6 @@ import { FcGoogle } from 'react-icons/fc';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
-  // Use the new Server Action hook
   const [state, formAction, isPending] = useActionState(login, null);
   const supabase = createClient();
 
@@ -14,7 +13,6 @@ export default function LoginPage() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // Ensure this redirects to home (/) not dashboard
         redirectTo: `${window.location.origin}/auth/callback?next=/`,
       },
     });
@@ -38,7 +36,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Connect the form to the Server Action */}
         <form action={formAction} className="space-y-5">
           <div>
             <label className="text-sm text-gray-300">Email</label>
@@ -86,7 +83,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-center text-gray-400 text-sm mt-6">
-          Don’t have an account?{' '}
+          Don't have an account?{' '}
           <a href="/register" className="text-blue-400 hover:underline">
             Create one
           </a>
