@@ -13,11 +13,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-white dark:bg-[#1E1F22]`}>
+      <body suppressHydrationWarning className={`${inter.className} bg-white dark:bg-[#1E1F22]`}>
         <ThemeProvider>
           <div className="flex h-screen overflow-hidden">
             <Sidebar />
-            
             <main className="flex-1 overflow-auto relative">
               {children}
             </main>

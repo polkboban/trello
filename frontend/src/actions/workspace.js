@@ -21,7 +21,7 @@ export async function getWorkspaces() {
     .eq('user_id', user.id);
 
   if (error) {
-    console.error('Error fetching workspaces:', error);
+    console.error('Error fetching workspaces:', error.message, error.hint, error.details);
     return [];
   }
 
