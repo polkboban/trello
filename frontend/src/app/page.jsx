@@ -134,8 +134,8 @@ export default async function Home() {
         </div>
       </div>
 
-      <footer className="border-t border-white/10 py-10 text-center text-gray-400 text-sm relative z-10 bg-black/20 backdrop-blur-sm">
-        <p>© 2025 Trello Clone.</p>
+      <footer className="border-t border-white/10 py-6 text-center text-gray-400 text-sm relative z-10 bg-black/20 backdrop-blur-sm">
+        <p>©2025 KanTrello.</p>
       </footer>
     </div>
   );
