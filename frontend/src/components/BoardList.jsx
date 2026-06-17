@@ -100,19 +100,22 @@ export default function BoardList({ initialProjects, workspaceId }) {
     setActiveId(null);
 
     if (active && over && active.id !== over.id) {
-      setProjects((items) => {
-        const oldIndex = items.findIndex((i) => i.id === active.id);
-        const newIndex = items.findIndex((i) => i.id === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        
-        const updates = newItems.map((item, index) => ({
-          id: item.id,
-          position: new Date().getTime() + (index * 1000) 
-        }));
-        
-        updateProjectOrder(updates);
-        return newItems;
-      });
+      const oldIndex = projects.findIndex((i) => i.id === active.id);
+      const newIndex = projects.findIndex((i) => i.id === over.id);
+      const newItems = arrayMove(projects, oldIndex, newIndex);
+      
+      setProjects(newItems);
+      
+      const updates = newItems.map((item, index) => ({
+        id: item.id,
+        position: new Date().getTime() + (index * 60000) 
+      }));
+      
+      try {
+        await updateProjectOrder(updates);
+      } catch (error) {
+        console.error("Failed to save new board order:", error);
+      }
     }
   };
 

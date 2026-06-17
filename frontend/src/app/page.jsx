@@ -68,7 +68,7 @@ export default async function Home() {
             <div className="w-8 h-8 bg-blue-600/80 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20 backdrop-blur-lg">
               <Layout className="text-white w-5 h-5" />
             </div>
-            <span>KanBan</span>
+            <span>KanTrello</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">

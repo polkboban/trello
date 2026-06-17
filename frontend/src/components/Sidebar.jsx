@@ -116,7 +116,7 @@ export default function Sidebar() {
           </div>
           {!isCollapsed && (
             <span className="font-bold text-lg text-gray-800 dark:text-white tracking-tight">
-              KanBan
+              KanTrello
             </span>
           )}
         </div>
